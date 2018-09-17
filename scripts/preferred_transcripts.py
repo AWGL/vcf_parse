@@ -46,8 +46,8 @@ class preferred_transcripts:
         # loop though the report, change preferred to true if there is a match, otherwise just copy the row
         for row in reader:
             try:
-                if row[transcript_column-1] in self.list:
-                    writer.writerow(row[0:preferred_column-1] + ['True'] + row[preferred_column:])
+                if row[transcript_column] in self.list:
+                    writer.writerow(row[0:preferred_column] + ['True'] + row[preferred_column+1:])
                 else:
                     writer.writerow(row)
             except:
