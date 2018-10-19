@@ -85,7 +85,7 @@ class vcf_report:
                     if self.annotations:
                         for annotation in self.annotations:
                             if annotation[1] == 'pref':
-                                out += ['False']
+                                out += ['Unknown']
                             if annotation[1] == 'filter':
                                 try:
                                     out += [str(var.FILTER)]
@@ -119,7 +119,7 @@ class vcf_report:
                         except:
                             out += ['']
                         # preferred
-                        out += ['False']
+                        out += ['Unknown']
                         # info
                         for annotation in self.info_fields:
                             if annotation != 'CSQ':
@@ -157,7 +157,7 @@ class vcf_report:
                 if self.annotations:
                     for annotation in self.annotations:
                         if annotation[1] == 'pref':
-                            out += ['False']
+                            out += ['Unknown']
                         if annotation[1] == 'filter':
                             try:
                                 out += [str(var.FILTER)]
@@ -187,7 +187,7 @@ class vcf_report:
                     except:
                         out += ['']
                     # preferred
-                    out += ['False']
+                    out += ['Unknown']
                     # info
                     for annotation in self.info_fields:
                         if annotation != 'CSQ':
@@ -224,7 +224,7 @@ class vcf_report:
                 header +=  '\t' + annotation[0]
         # all headers
         else:
-            header += '\tFilter\tPreference'
+            header += '\tFilter\tPreferred'
             for annotation in self.info_fields:
                 if annotation != 'CSQ':
                     header += '\t' + annotation

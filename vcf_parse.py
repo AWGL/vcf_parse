@@ -97,7 +97,7 @@ if __name__ == '__main__':
     if args.settings:
         report.settings(args.settings)
     else:
-        print('No settings file found -- outputting all data from VCF.')
+        print('INFO\tNo settings file found -- outputting all data from VCF.')
 
     # Make variant report of whole VCF
     report.make_report()
@@ -109,8 +109,8 @@ if __name__ == '__main__':
         pt.load(args)
         pt.apply(report.report_path)
     else:
-        print('''No preferred transcripts found -- preferred transcripts 
-            column will all be labelled as FALSE.''')
+        print('INFO\tNo preferred transcripts file provided -- preferred ' +
+        'transcripts column will all be labelled as Unknown.')
 
     # If single BED file provided, make variant report with BED file 
     # applied
