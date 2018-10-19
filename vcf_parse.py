@@ -55,6 +55,16 @@ def get_args():
         empty, all entries in the preferred transcript column (if present) 
         will be false.'''
     )
+
+
+    # OPTIONAL: List of preferred transcripts
+    parser.add_argument(
+        '-T', '--transcript_strictness', action='store', default=2, 
+        help='''Strictness of matching while annotating preferred transcripts.
+        Levels - 1: Transcripts must be an exact match. 2: transcripts will 
+        match regardless of the version number after the . at the end of a 
+        transcript (i.e. NM_001007553.2 will match with NM_001007553.1)'''
+    )
     
     # OPTIONAL: either a single BED file or a folder containing BED 
     # files, only one of these can be used
@@ -124,7 +134,7 @@ if __name__ == '__main__':
     if args.transcripts:
         pt = preferred_transcripts()
         pt.load(args)
-        pt.apply(report.report_path)
+        pt.apply(report.report_path, args.transcript_strictness)
     else:
         logger.info('no preferred transcripts file provided -- preferred ' +
         'transcripts column will all be labelled as "Unknown"')
