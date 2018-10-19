@@ -1,14 +1,24 @@
 import os
 import csv
+import logging
+import re
 
 
 # set global variable to point to bedtools executables
 BEDTOOLS_PATH = '/Users/erik/Applications/bedtools2/bin/'
 
 
-# ----------------- BED CLASS -----------------------------------------
+# -- BED CLASS --------------------------------------------------------
 
 class bed_object:
+    def __init__(self):
+        '''
+        Object properties that are loaded when the oject is created.
+        The logger deals with all status messages from the object.
+        '''
+        self.logger = logging.getLogger('vcf_parse.bed')
+
+
     def make_intersect_bed(self, bedfile, in_vcf):
         # turn report into bed file and save as temp.bed file
         with open(in_vcf.report_path, 'r') as report:
@@ -17,10 +27,10 @@ class bed_object:
                 for line in reader:
                     if line[0][0] != '#':
                         variant = line[1].split(':')
-                        out.write(variant[0] + "\t"
-                            + str(int(variant[1].strip('AGTC>,')) - 1)
-                            + "\t" + variant[1].strip('AGTC>,') + "\t"
-                            + line[1] + "\n")
+                        pos = re.sub('[^0-9]', '', variant[1])
+                        out.write('{}\t{}\t{}\t{}\n'.format(
+                            variant[0], str(int(pos) - 1), pos, line[1]
+                        ))
             out.close()
         report.close()
 
@@ -32,15 +42,15 @@ class bed_object:
 
         # intersect report bed and input bed, save as variable
         report_bed = in_vcf.report_path + '.temp'
-        intersect_command = (BEDTOOLS_PATH + 'intersectBed -a ' + report_bed + ' -b ' + bedfile)
+        intersect_command = ('{}intersectBed -a {} -b {}'.format(BEDTOOLS_PATH, report_bed, bedfile))
         try:
             results_intersect = os.popen(intersect_command).read()
         except IOError:
-            print('BEDTools error')
+            self.logger.warn('BEDTools error')
 
         # write bed variable to file, remove report bed
         self.bed_name = os.path.basename(bedfile).rstrip('.bed')
-        self.intersect_bed = os.path.join(out_folder, (in_vcf.sample + '_' + self.bed_name + '_intersect.bed'))
+        self.intersect_bed = os.path.join(out_folder, '{}_{}_intersect.bed'.format(in_vcf.sample, self.bed_name))
         self.out_folder = out_folder
 
         out = open(self.intersect_bed, 'w') 
@@ -58,7 +68,7 @@ class bed_object:
                 keep.append(line[3])
 
         # open empty file
-        outfile = os.path.join(self.out_folder, (in_vcf.sample + '_' + self.bed_name + '_VariantReport.txt'))
+        outfile = os.path.join(self.out_folder, '{}_{}_VariantReport.txt'.format(in_vcf.sample, self.bed_name))
         bed = open(outfile, 'w')
         bed_report = csv.writer(bed, delimiter='\t')
 
@@ -71,18 +81,20 @@ class bed_object:
                 if line[1] in keep:
                     bed_report.writerow(line)
         
-        print('Out: ' + outfile)
+        self.logger.info('applied BED file - {}'.format(outfile))
         os.remove(os.path.abspath(self.intersect_bed))
 
 
     def apply_single(self, bedfile, in_vcf):
+        self.logger.info('loading BED file 1 of 1: {}'.format(os.path.abspath(bedfile)))
         self.make_intersect_bed(bedfile, in_vcf)
         self.apply_bed(bedfile, in_vcf)
 
     
     def apply_multiple(self, bed_folder, in_vcf):
-        for file in os.listdir(bed_folder):
+        n = len(os.listdir(bed_folder))
+        for i, file in enumerate(os.listdir(bed_folder)):
             in_bed = os.path.join(bed_folder, file)
-            print('In:  ' + in_bed)
+            self.logger.info('loading BED file {} of {}: {}'.format(i+1, n, os.path.abspath(in_bed)))
             self.make_intersect_bed(in_bed, in_vcf)
             self.apply_bed(in_bed, in_vcf)

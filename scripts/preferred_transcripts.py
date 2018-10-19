@@ -1,11 +1,19 @@
 import os
 import csv
+import logging
 
 
 # -- PREFERRED TRANSCRIPTS CLASS --------------------------------------
 
 class preferred_transcripts:
+    def __init__(self):
+        '''
+        Object properties that are loaded when the oject is created.
+        The logger deals with all status messages from the object.
+        '''
+        self.logger = logging.getLogger('vcf_parse.pt')
     
+
     def load(self, args):
         '''
         Take a preferred transcript file and extract the preferred 
@@ -13,6 +21,8 @@ class preferred_transcripts:
         only called if a preferred transcripts file is included, so a 
         warning is thrown if it can't find the file.
         '''
+        self.logger.info('loading preferred transcripts from {}'.format(os.path.abspath(args.transcripts)))
+        # load transcripts
         try:
             preferred_transcripts = []
             with open(args.transcripts, 'r') as pt:
@@ -51,8 +61,8 @@ class preferred_transcripts:
             # The rest of the functions can carry on as normal becuase the 
             # originial variant report hasnt been touched.
             if transcript_column == None or preferred_column == None:
-                print(
-                    '''WARN\tCould not find transcripts/ preferred column in variant 
+                self.logger.warn(
+                    '''Could not find transcripts/ preferred column in variant 
                     report file, continuing without adding preferred transcripts.'''
                 )
                 f1.close()
@@ -71,11 +81,11 @@ class preferred_transcripts:
                     row[preferred_column+1:])
 
             # tidy up
-            print('INFO\tAdded preferred transcripts.')
+            self.logger.info('preferred transcripts applied')
             f1.close()
             f2.close()
             os.remove(report)
             os.rename(report_temp, report)
         else:
-            print('WARN\tCould not load preferred transcripts file provided, skipping step.')
+            self.logger.warn('could not load preferred transcripts file provided, skipping step.')
             return

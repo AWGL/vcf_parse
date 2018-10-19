@@ -1,42 +1,59 @@
 import os
 import vcf
 import csv
+import logging
 
 
 # ----------------- REPORT CLASS --------------------------------------
 class vcf_report:
+    def __init__(self):
+        '''
+        Object properties that are loaded when the oject is created.
+        The logger deals with all status messages from the object.
+        '''
+        self.logger = logging.getLogger('vcf_parse.vcf')
+
+
     def load_data(self, inp, out):
         # read input vcf with pyvcf package, save as list
+        self.logger.info('loading VCF file from {}'.format(os.path.abspath(inp)))
         with open(inp, 'r') as vcf_input:
             vcf_reader = vcf.Reader(vcf_input)
             vcf_records = []
             for var in vcf_reader:
                 vcf_records.append(var)
             self.data = vcf_records
+            self.logger.info('loading VCF completed')
+
         # load sample name from vcf
         self.sample = vcf_reader.samples[0]
+
         # load vep headers from vcf INFO field, split into list
         self.info_fields = vcf_reader.infos
         self.vep_fields = self.info_fields['CSQ'][3].split(' ')[-1].split('|')
         self.format_fields = vcf_reader.formats
+
         # load output filepath
         if out is not None:
             self.output_dir = os.path.abspath(out)
         else:
             self.output_dir = os.path.abspath('.')
         self.report_path = os.path.join(self.output_dir, self.sample + '_VariantReport.txt')
+
         # make empty vep variable 
         self.annotations = None
 
 
     def settings(self, settings_file):
         # Load in external file that defines what vep annotations to use
+        self.logger.info('loading report settings from {}'.format(os.path.abspath(settings_file)))
         settings = []
-        with open(settings_file, 'r') as s:
-            reader = csv.reader(s, delimiter='\t')
+        with open(settings_file, 'r') as file:
+            reader = csv.reader(file, delimiter='\t')
             for line in reader:
                 settings += [[ line[0], line[1] ]]
-        self.annotations = settings
+            self.annotations = settings
+            self.logger.info('loading report settings completed')
 
 
     def list_settings(self):
@@ -59,6 +76,8 @@ class vcf_report:
 
 
     def make_report(self):
+        self.logger.info('writing variant report')
+
         # open empty output file
         outfile1 = open(self.report_path, 'w')
         outfile = csv.writer(outfile1, delimiter='\t')
@@ -213,7 +232,6 @@ class vcf_report:
 
         outfile1.close()
 
-        # remove duplicates
         # ----- report header --------
         # Sample and variant are always the first two columns
         header = '#Sample\tVariant'
@@ -233,6 +251,7 @@ class vcf_report:
             for annotation in self.vep_fields:
                 header += '\t' + annotation
         
+        # remove duplicates
         uniq = os.popen('cat ' + self.report_path + ' | sort | uniq').read()
 
         out = open(self.report_path, 'w') 
@@ -240,3 +259,5 @@ class vcf_report:
         out.write(header)
         out.write(uniq)
         out.close()
+        self.logger.info('variant report completed - {}'.format(self.report_path))
+
