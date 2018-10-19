@@ -250,6 +250,7 @@ class vcf_report:
                 header += '\t' + annotation
             for annotation in self.vep_fields:
                 header += '\t' + annotation
+        header += '\n'
         
         # remove duplicates
         uniq = os.popen('cat ' + self.report_path + ' | sort | uniq').read()
