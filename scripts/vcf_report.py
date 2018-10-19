@@ -29,7 +29,7 @@ class vcf_report:
         self.annotations = None
 
 
-    def vep_settings(self, settings_file):
+    def settings(self, settings_file):
         # Load in external file that defines what vep annotations to use
         settings = []
         with open(settings_file, 'r') as s:
