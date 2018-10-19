@@ -39,6 +39,25 @@ class vcf_report:
         self.annotations = settings
 
 
+    def list_settings(self):
+        '''
+        Returns a list to screen containing all possible column headers
+        and the source that the data comes from.
+        '''
+        # info fields
+        for record in self.info_fields:
+            print(record + '\tinfo')
+        # format fields
+        for record in self.format_fields:
+            print(record + '\tformat')
+        # preferred transcript and filter fields
+        print('Preferred\tpref')
+        print('Filter\tfilter')
+        # vep fields
+        for record in self.vep_fields:
+            print(record + '\tvep')
+
+
     def make_report(self):
         # open empty output file
         outfile1 = open(self.report_path, 'w')

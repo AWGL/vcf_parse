@@ -10,9 +10,11 @@ from scripts.bed_object import bed_object
 def get_args():
     '''
     Use argparse package to take arguments from the command line and 
-    store them as an argparse object.
+    store them as an argparse object. See descriptions for full detail 
+    of each argument.
     '''
 
+    # Make empty argparse object
     parser = argparse.ArgumentParser(
         description='''Takes a VCF file and converts it into a tsv format 
         variant report. Can also take a BED file or a folder of BED 
@@ -20,20 +22,21 @@ def get_args():
         calls within each of the BED files.'''
     )
 
-    # required - vcf file
+    # Arguments (see help string for full descriptions):
+    # REQUIRED: VCF file input
     parser.add_argument(
         'input', action='store', 
         help='Filepath to input vcf file. Required.'
     )
 
-    # optional - output folder, defaults to current directory if empty
+    # OPTIONAL: Output folder, defaults to current directory if empty
     parser.add_argument(
         '-O', '--output', action='store', 
         help='''Filepath to folder where output reports will be saved. If 
         empty, defaults to current directory.'''
     )
 
-    # optional - file containing the headers for the report
+    # OPTIONAL: File containing the headers for the report
     parser.add_argument(
         '-s', '--settings', action='store', 
         help='''Filepath to settings file. This is a tab seperated file which 
@@ -43,7 +46,7 @@ def get_args():
         available settings, run vcf_parse with the -l flag.'''
     )
 
-    # optional - list of preferred transcripts
+    # OPTIONAL: List of preferred transcripts
     parser.add_argument(
         '-t', '--transcripts', action='store', 
         help='''Filepath to preferred transcripts file. must be a tab 
@@ -52,7 +55,7 @@ def get_args():
         will be false.'''
     )
     
-    # optional -  either a single bed file or a folder containing bed 
+    # OPTIONAL: either a single BED file or a folder containing BED 
     # files, only one of these can be used
     bed_files = parser.add_mutually_exclusive_group()
     bed_files.add_argument(
@@ -66,11 +69,11 @@ def get_args():
         Cannot be used together with -b flag.'''
     )
 
-    # optional - lists the VEP headers in a vcf, if this flag is used 
-    # then it will return the list and exit
+    # OPTIONAL: Lists all headers in a vcf then exits
     parser.add_argument(
         '-l', '--settings_list', action='store_true', 
-        help='Returns a list of VEP headers from the VCF then exits.'
+        help='''Returns a list of all availabile headers from the VCF and the 
+        source of the data, then exits.'''
     )
 
     return parser.parse_args()
@@ -85,22 +88,22 @@ if __name__ == '__main__':
     # Load data using load_data function within vcf_report.py
     report.load_data(args.input, args.output)
 
-    # print vep headers and exit if -l flag called
+    # If -l flag called, print headers and exit
     if args.settings_list:
-        for record in report.vep_fields:
-            print(record + '\tvep')
+        report.list_settings()
         exit()
     
-    # get vep settings
+    # If settings file provided, load settings
     if args.settings:
         report.settings(args.settings)
     else:
         print('No settings file found -- outputting all data from VCF.')
 
-    # make total report
+    # Make variant report of whole VCF
     report.make_report()
 
-    # apply preferred transcripts
+    # If preferred transcripts provided, apply preferred transcripts to
+    # variant report
     if args.transcripts:
         pt = preferred_transcripts()
         pt.load(args)
@@ -109,13 +112,15 @@ if __name__ == '__main__':
         print('''No preferred transcripts found -- preferred transcripts 
             column will all be labelled as FALSE.''')
 
-    # make single bed report
+    # If single BED file provided, make variant report with BED file 
+    # applied
     if args.bed:
         bed = bed_object()
         bed.apply_single(args.bed, report)
 
-    # make multiple bed report
+    # If folder of BED file provided, make a seperate variant report 
+    # for each BED file. Output will be saved in a folder named the 
+    # same as the BED file folder, within the output directory.
     if args.bed_folder:
         bed = bed_object()
         bed.apply_multiple(args.bed_folder, report)
-
