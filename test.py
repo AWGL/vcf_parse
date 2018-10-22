@@ -13,7 +13,7 @@ class TestVCF(unittest.TestCase):
         # load in common files
         self.report = vcf_report()
         self.report.load_data(
-            os.path.abspath('test/test_vcf.vcf'), os.path.abspath('test/')
+            os.path.abspath('test/test.vcf'), os.path.abspath('test/')
             )
         self.report.make_report()
 
