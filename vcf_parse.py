@@ -59,9 +59,9 @@ def get_args():
 
     # OPTIONAL: List of preferred transcripts
     parser.add_argument(
-        '-T', '--transcript_strictness', action='store', default=2, 
+        '-T', '--transcript_strictness', action='store', default='low', 
         help='''Strictness of matching while annotating preferred transcripts.
-        Levels - 1: Transcripts must be an exact match. 2: transcripts will 
+        Levels - high: Transcripts must be an exact match. low: transcripts will 
         match regardless of the version number after the . at the end of a 
         transcript (i.e. NM_001007553.2 will match with NM_001007553.1)'''
     )
@@ -103,7 +103,8 @@ if __name__ == '__main__':
     )
     handler.setFormatter(formatter)
     logger.addHandler(handler)
-    logger.info('running vcf_parse.py...\n{}'.format('---'*50))
+    print('{}'.format('---'*50))
+    logger.info('running vcf_parse.py...')
 
 
     # Load arguments,make vcf report object and load data
@@ -133,7 +134,7 @@ if __name__ == '__main__':
     # variant report
     if args.transcripts:
         pt = preferred_transcripts()
-        pt.load(args)
+        pt.load(args.transcripts)
         pt.apply(report.report_path, args.transcript_strictness)
     else:
         logger.info('no preferred transcripts file provided -- preferred ' +

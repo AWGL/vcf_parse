@@ -240,6 +240,7 @@ class vcf_report:
         if self.annotations:
             for annotation in self.annotations:
                 header +=  '\t' + annotation[0]
+
         # all headers
         else:
             header += '\tFilter\tPreferred'

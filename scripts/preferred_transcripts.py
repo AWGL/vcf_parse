@@ -14,18 +14,18 @@ class preferred_transcripts:
         self.logger = logging.getLogger('vcf_parse.pt')
     
 
-    def load(self, args):
+    def load(self, transcripts_file):
         '''
         Take a preferred transcript file and extract the preferred 
         transcripts into a list, and save as self.list. This function is 
         only called if a preferred transcripts file is included, so a 
         warning is thrown if it can't find the file.
         '''
-        self.logger.info('loading preferred transcripts from {}'.format(os.path.abspath(args.transcripts)))
+        self.logger.info('loading preferred transcripts from {}'.format(os.path.abspath(transcripts_file)))
         # load transcripts
         try:
             preferred_transcripts = []
-            with open(args.transcripts, 'r') as pt:
+            with open(transcripts_file, 'r') as pt:
                 pt_reader = csv.reader(pt, delimiter='\t')
                 for line in pt_reader:
                     preferred_transcripts += [line[1]]
@@ -72,10 +72,8 @@ class preferred_transcripts:
 
             # loop though the report, change preferred to true if there is 
             # a match, otherwise just copy the row
-            # strictness of 1 means that transcripts must be exact match
-            print(strictness)
-            print(type(strictness))
-            if int(strictness) == 1:
+            # high strictness means that transcripts must be exact match
+            if strictness == 'high':
                 for row in reader:
                     if row[transcript_column] in self.list:
                         writer.writerow(row[0:preferred_column] + ['True'] + 
@@ -84,8 +82,8 @@ class preferred_transcripts:
                         writer.writerow(row[0:preferred_column] + ['False'] + 
                         row[preferred_column+1:])
 
-            # strictness of 2 means that transcripts can have different value after the . in refseq transcripts
-            if int(strictness) == 2:
+            # low strictness means that transcripts can have different value after the . in refseq transcripts
+            if strictness == 'low':
                 for row in reader:
                     match = False
                     try:
