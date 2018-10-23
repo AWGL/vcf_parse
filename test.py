@@ -11,10 +11,10 @@ Version:    1.0.0
 Updated:    23 Oct 2018
 """
 
+
 import unittest
 import os
 import csv
-
 
 from scripts.vcf_report import vcf_report
 from scripts.preferred_transcripts import preferred_transcripts
@@ -23,7 +23,7 @@ from scripts.bed_object import bed_object
 
 class TestVCF(unittest.TestCase):
     def setUp(self):
-        # load in common files
+        """load in common files"""
         self.report = vcf_report()
         self.report.load_data(
             os.path.abspath('test/test.vcf'), os.path.abspath('test/')
@@ -32,6 +32,7 @@ class TestVCF(unittest.TestCase):
 
 
     def tearDown(self):
+        """remove output files after test has run"""
         os.remove(self.report.report_path)
         self.report = None
         self.pt = None
@@ -46,18 +47,30 @@ class TestVCF(unittest.TestCase):
 
 
     def test_VariantReport_number_variants(self):
+        """
+        Check that number of variants loaded from VCF is correct, 
+        should be 96
+        """
         self.assertEqual(len(self.report.data), 96, 
             'Number of variants incorrect'
             )
 
 
     def test_VariantReport_sample_name(self):
+        """
+        Check that sample name loaded from VCF is correct, 
+        should be SAMPLE1
+        """
         self.assertEqual(self.report.sample, 'SAMPLE1', 
             'Sample name incorrect'
             )
 
 
     def test_VariantReport_info_fields(self):
+        """
+        Check that info fields loaded from VCF are correct, 
+        should be the same as the expected list below
+        """
         expected_info_fields = ['AC', 'AF', 'AN', 'BaseQRankSum',
         'DP', 'EXON', 'FC', 'GI', 'LCRLen', 'MQ', 'MQ0',
         'MQRankSum', 'TI', 'CSQ']
@@ -71,6 +84,10 @@ class TestVCF(unittest.TestCase):
 
 
     def test_VariantReport_format_fields(self):
+        """
+        Check that format fields loaded from VCF are correct, 
+        should be the same as the expected list below
+        """
         expected_format_fields = ['AD', 'GQ', 'GT', 'NL', 'SB', 'VF']
         report_format_fields = []
         for field in self.report.format_fields:
@@ -81,6 +98,10 @@ class TestVCF(unittest.TestCase):
 
 
     def test_VariantReport_vep_fields(self):
+        """
+        Check that vep fields loaded from VCF are correct, 
+        should be the same as the expected list below
+        """
         expected_vep_fields = ['Allele', 'Consequence', 'IMPACT', 'SYMBOL', 
         'Gene', 'Feature_type', 'Feature', 'BIOTYPE', 'EXON', 'INTRON', 
         'HGVSc', 'HGVSp', 'cDNA_position', 'CDS_position', 'Protein_position',
@@ -98,8 +119,11 @@ class TestVCF(unittest.TestCase):
         self.assertEqual(self.report.vep_fields, expected_vep_fields)
 
 
-    # with/without settings file? - count columns
     def test_VariantReport_load_settings(self):
+        """
+        Check that settings file is loaded correctly, the headers loaded in 
+        should be the same as the expected list below
+        """
         expected_settings = ['#Sample', 'Variant', 'Filter', 'GT', 'AF',
         'DP', 'Feature', 'Preferred', 'CANONICAL', 'Allele', 
         'Consequence', 'IMPACT', 'SYMBOL', 'Gene', 'DP', 'Feature_type']
@@ -111,8 +135,11 @@ class TestVCF(unittest.TestCase):
             self.assertEqual(reader.next(), expected_settings)
 
 
-    # with/without preferred transcripts
     def test_preferred_transcripts_high_strictness_true(self):
+        """
+        Check that preferred transcripts are labelled correctly. 
+        NM_001007553 should be true with high and low strictness
+        """
         self.pt = preferred_transcripts()
         self.pt.load(os.path.abspath('test/PreferredTranscripts.txt'))
         self.pt.apply(self.report.report_path, 'high')
@@ -125,6 +152,11 @@ class TestVCF(unittest.TestCase):
 
 
     def test_preferred_transcripts_high_strictness_false(self):
+        """
+        Check that preferred transcripts are labelled correctly. 
+        XM_005245221 should be false with high strictness and true with
+        low strictness.
+        """
         self.pt = preferred_transcripts()
         self.pt.load(os.path.abspath('test/PreferredTranscripts.txt'))
         self.pt.apply(self.report.report_path, 'high')
@@ -137,6 +169,10 @@ class TestVCF(unittest.TestCase):
 
 
     def test_preferred_transcripts_low_strictness_true_1(self):
+        """
+        Check that preferred transcripts are labelled correctly. 
+        NM_001007553 should be true with high and low strictness
+        """
         self.pt = preferred_transcripts()
         self.pt.load(os.path.abspath('test/PreferredTranscripts.txt'))
         self.pt.apply(self.report.report_path, 'low')
@@ -149,6 +185,11 @@ class TestVCF(unittest.TestCase):
 
 
     def test_preferred_transcripts_low_strictness_true_2(self):
+        """
+        Check that preferred transcripts are labelled correctly. 
+        XM_005245221 should be false with high strictness and true with
+        low strictness.
+        """
         self.pt = preferred_transcripts()
         self.pt.load(os.path.abspath('test/PreferredTranscripts.txt'))
         self.pt.apply(self.report.report_path, 'low')
@@ -161,6 +202,10 @@ class TestVCF(unittest.TestCase):
 
 
     def test_preferred_transcripts_false(self):
+        """
+        Check that preferred transcripts are labelled correctly. 
+        Not in preferred transcripts - should be false.
+        """
         self.pt = preferred_transcripts()
         self.pt.load(os.path.abspath('test/PreferredTranscripts.txt'))
         self.pt.apply(self.report.report_path, 'low')
@@ -173,6 +218,10 @@ class TestVCF(unittest.TestCase):
 
     # apply bed files
     def test_bed_files(self):
+        """
+        Check that correct number of variants are filtered out with BED file
+        Should be 6
+        """
         self.bed = bed_object()
         self.bed.apply_single(
             os.path.abspath('test/test_bed_files/bed1.bed'), self.report
@@ -184,6 +233,11 @@ class TestVCF(unittest.TestCase):
 
 
     def test_bed_files_multiple(self):
+        """
+        Check that correct number of variants are filtered out with 
+        multiple BED files
+        Should be 6 and 10
+        """
         self.bed = bed_object()
         self.bed.apply_multiple(
             os.path.abspath('test/test_bed_files/'), self.report
