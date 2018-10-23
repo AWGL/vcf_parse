@@ -22,21 +22,24 @@ import logging
 
 class preferred_transcripts:
     def __init__(self):
-        '''
+        """
         Object properties that are loaded when the oject is created.
-        The logger deals with all status messages from the object.
-        '''
+        The logger deals with all status messages from the object and
+        is a child of the main logger vcf_parse.
+        """
         self.logger = logging.getLogger('vcf_parse.pt')
     
 
     def load(self, transcripts_file):
-        '''
+        """
         Take a preferred transcript file and extract the preferred 
         transcripts into a list, and save as self.list. This function is 
         only called if a preferred transcripts file is included, so a 
         warning is thrown if it can't find the file.
-        '''
-        self.logger.info('loading preferred transcripts from {}'.format(os.path.abspath(transcripts_file)))
+        """
+        self.logger.info('loading preferred transcripts from {}'.format(
+            os.path.abspath(transcripts_file))
+        )
         # load transcripts
         try:
             preferred_transcripts = []
@@ -50,31 +53,32 @@ class preferred_transcripts:
 
 
     def apply(self, report, strictness, transcript_id='Feature'):
-        '''
+        """
         Take a variant report and loop through each row, change 
         preferred transcript to true if there's a match, otherwise 
         change to false.
-        '''
+        """
         if self.list:
-            # open report file and empty temp file to save new output
+            # open report file and new temp file to save output
             report_temp = os.path.join(report + '.temp')
             f1 = open(report, 'rb')
             reader = csv.reader(f1, delimiter='\t')
             f2 = open(report_temp, 'wb')
             writer = csv.writer(f2, delimiter='\t')
 
-            # add header to new file, find the column that the transcript 
-            # ID is kept in
+            # add header to new file
             header = next(reader)
             writer.writerow(header)
+
+            # find the preferred and transcript column numbers
             preferred_column = None
             transcript_column = None
             preferred_column = header.index('Preferred')
             transcript_column = header.index(transcript_id)
 
-            # if transcript ID cant be found, exit the script and tidy up.
-            # The rest of the functions can carry on as normal becuase the 
-            # originial variant report hasnt been touched.
+            # if transcript column cant be found, exit the script and tidy up.
+            # The rest of the functions can carry on as normal because the 
+            # original variant report hasnt been touched.
             if transcript_column == None or preferred_column == None:
                 self.logger.warn(
                     '''Could not find transcripts/ preferred column in variant 
@@ -85,8 +89,8 @@ class preferred_transcripts:
                 os.remove(report_temp)
                 return
 
-            # loop though the report, change preferred to true if there is 
-            # a match, otherwise just copy the row
+            # loop though the report, change preferred to true if there
+            # is a match, false if there is not
             # high strictness means that transcripts must be exact match
             if strictness == 'high':
                 for row in reader:
@@ -97,7 +101,8 @@ class preferred_transcripts:
                         writer.writerow(row[0:preferred_column] + ['False'] + 
                         row[preferred_column+1:])
 
-            # low strictness means that transcripts can have different value after the . in refseq transcripts
+            # low strictness means that transcripts can have different 
+            # value after the . in refseq transcripts
             if strictness == 'low':
                 for row in reader:
                     match = False
@@ -122,6 +127,10 @@ class preferred_transcripts:
             f2.close()
             os.remove(report)
             os.rename(report_temp, report)
+        
+        # if error, skip adding preferred transcripts
         else:
-            self.logger.warn('could not load preferred transcripts file provided, skipping step.')
+            self.logger.warn(
+                'could not load preferred transcripts file provided, skipping step.'
+            )
             return
