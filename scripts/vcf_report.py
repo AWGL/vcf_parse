@@ -328,7 +328,7 @@ class vcf_report:
         outfile.close()
         
         # remove duplicates in output file
-        uniq = os.popen('cat ' + self.report_path + ' | sort | uniq').read()
+        uniq = os.popen('cat {} | sort | uniq'.format(self.report_path)).read()
 
         # write final report
         out = open(self.report_path, 'w') 
