@@ -1,3 +1,18 @@
+#!/anaconda3/envs/python2/bin/python
+
+"""
+vcf_report.py
+
+Object that deals with the loading and parsing of VCF files. 
+Loaded as part of the vcf_parse.py program.
+
+Author:     Erik Waskiewicz
+Created:    31 Aug 2018
+Version:    1.0.0
+Updated:    23 Oct 2018
+"""
+
+
 import os
 import vcf
 import csv

@@ -1,3 +1,27 @@
+#!/anaconda3/envs/python2/bin/python
+
+"""
+vcf_parse.py
+
+Takes a VCF file and parses the variants to produce a tab delimited 
+variant report.
+
+Usage:  vcf_parse.py [-h] [-O OUTPUT] [-s SETTINGS] 
+                     [-t TRANSCRIPTS] [-T TRANSCRIPT_STRICTNESS] 
+                     [-b BED | -B BED_FOLDER] 
+                     [-l] [-v]
+                     input
+        vcf_parse.py -h for full description of options.
+
+Author:     Erik Waskiewicz
+Created:    31 Aug 2018
+Version:    1.0.0
+Updated:    23 Oct 2018
+"""
+__version__ = '1.0.0'
+__updated__ = '23 Oct 2018'
+
+
 import argparse
 import logging
 
@@ -23,6 +47,14 @@ def get_args():
         calls within each of the BED files.'''
     )
 
+
+    # Version info
+    parser.add_argument(
+        '-v', '--version', action='version', 
+        version='%(prog)s v{} last updated {}'.format(__version__, __updated__)
+    )
+
+
     # Arguments (see help string for full descriptions):
     # REQUIRED: VCF file input
     parser.add_argument(
@@ -30,12 +62,14 @@ def get_args():
         help='Filepath to input vcf file. Required.'
     )
 
+
     # OPTIONAL: Output folder, defaults to current directory if empty
     parser.add_argument(
         '-O', '--output', action='store', 
         help='''Filepath to folder where output reports will be saved. If 
         empty, defaults to current directory.'''
     )
+
 
     # OPTIONAL: File containing the headers for the report
     parser.add_argument(
@@ -46,6 +80,7 @@ def get_args():
         match up with how they appear in the VCF, for a full list of the 
         available settings, run vcf_parse with the -l flag.'''
     )
+
 
     # OPTIONAL: List of preferred transcripts
     parser.add_argument(
@@ -65,7 +100,8 @@ def get_args():
         match regardless of the version number after the . at the end of a 
         transcript (i.e. NM_001007553.2 will match with NM_001007553.1)'''
     )
-    
+
+
     # OPTIONAL: either a single BED file or a folder containing BED 
     # files, only one of these can be used
     bed_files = parser.add_mutually_exclusive_group()
@@ -80,12 +116,14 @@ def get_args():
         Cannot be used together with -b flag.'''
     )
 
+
     # OPTIONAL: Lists all headers in a vcf then exits
     parser.add_argument(
         '-l', '--settings_list', action='store_true', 
         help='''Returns a list of all availabile headers from the VCF and the 
         source of the data, then exits.'''
     )
+
 
     return parser.parse_args()
 
@@ -103,7 +141,7 @@ if __name__ == '__main__':
     )
     handler.setFormatter(formatter)
     logger.addHandler(handler)
-    print('{}'.format('---'*50))
+    print('{}'.format('---'*30))
     logger.info('running vcf_parse.py...')
 
 
@@ -158,4 +196,4 @@ if __name__ == '__main__':
         logger.info('no BED files provided')
 
     # Finish
-    logger.info('vcf_parse.py completed\n{}'.format('---'*50))
+    logger.info('vcf_parse.py completed\n{}'.format('---'*30))

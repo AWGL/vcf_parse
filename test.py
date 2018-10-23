@@ -1,3 +1,16 @@
+#!/anaconda3/envs/python2/bin/python
+
+"""
+test.py
+
+Unit tests for the vcf_parse.py program.
+
+Author:     Erik Waskiewicz
+Created:    22 Oct 2018
+Version:    1.0.0
+Updated:    23 Oct 2018
+"""
+
 import unittest
 import os
 import csv
