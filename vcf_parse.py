@@ -41,17 +41,23 @@ def get_args():
 
     # Make empty argparse object
     parser = argparse.ArgumentParser(
-        description='''Takes a VCF file and converts it into a tsv format 
-        variant report. Can also take a BED file or a folder of BED 
-        files and output a seperate variant report containing only the 
-        calls within each of the BED files.'''
+        formatter_class=argparse.RawTextHelpFormatter,
+        description=
+'''
+summary:
+  Takes a VCF file and parses the variants to produce a tab delimited 
+  variant report.
+'''
     )
 
 
     # Version info
     parser.add_argument(
         '-v', '--version', action='version', 
-        version='%(prog)s v{} last updated {}'.format(__version__, __updated__)
+        version=
+            '%(prog)s\nversion:\t{}\nlast updated:\t{}'.format(
+                __version__, __updated__
+            )
     )
 
 
@@ -59,46 +65,53 @@ def get_args():
     # REQUIRED: VCF file input
     parser.add_argument(
         'input', action='store', 
-        help='Filepath to input vcf file. Required.'
+        help='Filepath to input vcf file. REQUIRED.'
     )
 
 
     # OPTIONAL: Output folder, defaults to current directory if empty
     parser.add_argument(
         '-O', '--output', action='store', 
-        help='''Filepath to folder where output reports will be saved. If 
-        empty, defaults to current directory.'''
-    )
-
-
-    # OPTIONAL: File containing the headers for the report
-    parser.add_argument(
-        '-s', '--settings', action='store', 
-        help='''Filepath to settings file. This is a tab seperated file which 
-        specifies the order of the report headers in the first column and the 
-        location to find the data in the second column. Column headers must 
-        match up with how they appear in the VCF, for a full list of the 
-        available settings, run vcf_parse with the -l flag.'''
+        help=
+'''
+Filepath to folder where output reports will be saved. 
+If missing, defaults to current directory.
+\n'''
     )
 
 
     # OPTIONAL: List of preferred transcripts
     parser.add_argument(
         '-t', '--transcripts', action='store', 
-        help='''Filepath to preferred transcripts file. must be a tab 
-        seperated file with preferred transcripts in the seond column. If 
-        empty, all entries in the preferred transcript column (if present) 
-        will be false.'''
+        help=
+'''
+Filepath to preferred transcripts file. 
+
+Must be a tab seperated file with preferred transcripts in the seond 
+column. If missing, all entries in the preferred transcript column 
+will be labelled as 'Unknown'.
+\n'''
     )
 
 
     # OPTIONAL: List of preferred transcripts
     parser.add_argument(
         '-T', '--transcript_strictness', action='store', default='low', 
-        help='''Strictness of matching while annotating preferred transcripts.
-        Levels - high: Transcripts must be an exact match. low: transcripts will 
-        match regardless of the version number after the . at the end of a 
-        transcript (i.e. NM_001007553.2 will match with NM_001007553.1)'''
+        help=
+'''
+Strictness of matching while annotating preferred transcripts.
+Default setting is low.
+
+Options: 
+
+high - Transcripts must be an exact match. 
+       e.g. NM_001007553.2 and NM_001007553.1 won't match,
+            NM_001007553.1 and NM_001007553.1 will.
+
+low  - Transcripts will match regardless of the version number. The 
+       version number is after the . at the end of a transcript 
+       e.g. NM_001007553.2 and NM_001007553.1 will match.
+\n'''
     )
 
 
@@ -107,21 +120,59 @@ def get_args():
     bed_files = parser.add_mutually_exclusive_group()
     bed_files.add_argument(
         '-b', '--bed', action='store', 
-        help='''Filepath to a single BED file. 
-        Cannot be used together with -B flag.'''
+        help=
+'''
+Filepath to a single BED file. 
+Cannot be used together with -B flag.
+\n'''
     )
     bed_files.add_argument(
         '-B', '--bed_folder', action='store', 
-        help='''Filepath to folder of BED files. 
-        Cannot be used together with -b flag.'''
+        help=
+'''
+Filepath to folder of BED files. 
+Cannot be used together with -b flag.
+\n'''
+    )
+
+
+    # OPTIONAL: File containing the headers for the report
+    parser.add_argument(
+        '-s', '--settings', action='store', 
+        help=
+'''
+Filepath to settings file. 
+
+This is a tab seperated text file containing a number of rows, where 
+each row specifies an annotation to be included in the variant report.
+Only annotations included in the settings file will be included in the
+variant report.
+The columns in the variant report will be in the same order as the order
+in which the annotations appear in the settings file.
+
+Each row contains two columns:
+
+Column 1 - annotations headers, these must match up with how they appear
+           in the VCF (case sensitive), 
+
+Column 2 - location where to find the data within the VCF, used to select 
+           the correct parsing function.
+           Either info, format, vep, filter or pref.
+
+To make a settings file with all available options from a VCF, run:
+    vcf_parse -l path_to_input_vcf > settings.txt
+\n'''
     )
 
 
     # OPTIONAL: Lists all headers in a vcf then exits
     parser.add_argument(
         '-l', '--settings_list', action='store_true', 
-        help='''Returns a list of all availabile headers from the VCF and the 
-        source of the data, then exits.'''
+        help=
+'''
+Return a list of all availabile settings to the screen, then exit.
+See settings flag for usage.
+\n'''
     )
 
 
