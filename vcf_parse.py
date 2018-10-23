@@ -6,10 +6,11 @@ vcf_parse.py
 Takes a VCF file and parses the variants to produce a tab delimited 
 variant report.
 
-Usage:  vcf_parse.py [-h] [-O OUTPUT] [-s SETTINGS] 
+Usage:  vcf_parse.py [-h] [-v] 
+                     [-O OUTPUT]  
                      [-t TRANSCRIPTS] [-T TRANSCRIPT_STRICTNESS] 
                      [-b BED | -B BED_FOLDER] 
-                     [-l] [-v]
+                     [-s SETTINGS] [-l] 
                      input
         vcf_parse.py -h for full description of options.
 
@@ -24,6 +25,7 @@ __updated__ = '23 Oct 2018'
 
 import argparse
 import logging
+import textwrap
 
 from scripts.vcf_report import vcf_report
 from scripts.preferred_transcripts import preferred_transcripts
@@ -33,22 +35,21 @@ from scripts.bed_object import bed_object
 ## -- PARSE INPUT ARGUMENTS -------------------------------------------
 
 def get_args():
-    '''
-    Use argparse package to take arguments from the command line and 
-    store them as an argparse object. See descriptions for full detail 
-    of each argument.
-    '''
+    """
+    Use argparse package to take arguments from the command line. 
+    See descriptions for full detail of each argument.
+    """
 
     # Make empty argparse object
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter,
-        description=
-'''
-summary:
-  Takes a VCF file and parses the variants to produce a tab delimited 
-  variant report.
-'''
-    )
+        description=textwrap.dedent(
+        '''
+        summary:
+        Takes a VCF file and parses the variants to produce a tab delimited 
+        variant report.
+        '''
+    ))
 
 
     # Version info
@@ -65,115 +66,131 @@ summary:
     # REQUIRED: VCF file input
     parser.add_argument(
         'input', action='store', 
-        help='Filepath to input vcf file. REQUIRED.'
+        help='Filepath to input VCF file. REQUIRED.'
     )
 
 
     # OPTIONAL: Output folder, defaults to current directory if empty
     parser.add_argument(
         '-O', '--output', action='store', 
-        help=
-'''
-Filepath to folder where output reports will be saved. 
-If missing, defaults to current directory.
-\n'''
-    )
+        help=textwrap.dedent(
+        '''
+        Filepath to folder where output reports will be saved. 
+        If missing, defaults to current directory.
+        \n'''
+    ))
 
 
     # OPTIONAL: List of preferred transcripts
     parser.add_argument(
         '-t', '--transcripts', action='store', 
-        help=
-'''
-Filepath to preferred transcripts file. 
+        help=textwrap.dedent(
+        '''
+        Filepath to preferred transcripts file. 
 
-Must be a tab seperated file with preferred transcripts in the seond 
-column. If missing, all entries in the preferred transcript column 
-will be labelled as 'Unknown'.
-\n'''
-    )
+        Must be a tab seperated file with preferred transcripts in the second 
+        column. If missing, all entries in the preferred transcript column 
+        will be labelled as 'Unknown'.
+        \n'''
+    ))
 
 
     # OPTIONAL: List of preferred transcripts
     parser.add_argument(
         '-T', '--transcript_strictness', action='store', default='low', 
-        help=
-'''
-Strictness of matching while annotating preferred transcripts.
-Default setting is low.
+        help=textwrap.dedent(
+        '''
+        Strictness of matching while annotating preferred transcripts.
+        Default setting is low.
 
-Options: 
+        Options: 
 
-high - Transcripts must be an exact match. 
-       e.g. NM_001007553.2 and NM_001007553.1 won't match,
-            NM_001007553.1 and NM_001007553.1 will.
+        high - Transcripts must be an exact match. 
+               e.g. NM_001007553.2 and NM_001007553.1 won't match,
+                    NM_001007553.1 and NM_001007553.1 will.
 
-low  - Transcripts will match regardless of the version number. The 
-       version number is after the . at the end of a transcript 
-       e.g. NM_001007553.2 and NM_001007553.1 will match.
-\n'''
-    )
+        low  - Transcripts will match regardless of the version number. The 
+               version number is after the . at the end of a transcript 
+               e.g. NM_001007553.2 and NM_001007553.1 will match.
+        \n'''
+    ))
 
 
     # OPTIONAL: either a single BED file or a folder containing BED 
     # files, only one of these can be used
     bed_files = parser.add_mutually_exclusive_group()
+
+    # Single BED file
     bed_files.add_argument(
         '-b', '--bed', action='store', 
-        help=
-'''
-Filepath to a single BED file. 
-Cannot be used together with -B flag.
-\n'''
-    )
+        help=textwrap.dedent(
+        '''
+        Filepath to a single BED file. 
+
+        The BED file will be applied to the variant report and a seperate
+        report saved with the BED file applied. This report will be saved in 
+        the same output folder as the original variant report, with the BED 
+        file name added to it.
+        Cannot be used together with -B flag.
+        \n'''
+            ))
+
+    # Multiple BED files
     bed_files.add_argument(
         '-B', '--bed_folder', action='store', 
-        help=
-'''
-Filepath to folder of BED files. 
-Cannot be used together with -b flag.
-\n'''
-    )
+        help=textwrap.dedent(
+        '''
+        Filepath to folder containing BED files. 
+
+        Each BED file will be applied to the variant report and a seperate
+        report saved with the BED file applied. These reports will be saved in
+        a new folder within the output folder, named the same as the input BED
+        folder. 
+        The file names will be the same as the original variant report, with 
+        the BED file name added to them.
+        Cannot be used together with -b flag.
+        \n'''
+    ))
 
 
     # OPTIONAL: File containing the headers for the report
     parser.add_argument(
         '-s', '--settings', action='store', 
-        help=
-'''
-Filepath to settings file. 
+        help=textwrap.dedent(
+        '''
+        Filepath to settings file. 
 
-This is a tab seperated text file containing a number of rows, where 
-each row specifies an annotation to be included in the variant report.
-Only annotations included in the settings file will be included in the
-variant report.
-The columns in the variant report will be in the same order as the order
-in which the annotations appear in the settings file.
+        This is a tab seperated text file containing a number of rows, where 
+        each row specifies an annotation to be included in the variant report.
+        Only annotations included in the settings file will be included in the
+        variant report.
+        The columns in the variant report will be in the same order as the 
+        order in which the annotations appear in the settings file.
 
-Each row contains two columns:
+        Each row contains two columns:
 
-Column 1 - annotations headers, these must match up with how they appear
-           in the VCF (case sensitive), 
+        Column 1 - annotations headers, these must match up with how they 
+                   appear in the VCF (case sensitive), 
 
-Column 2 - location where to find the data within the VCF, used to select 
-           the correct parsing function.
-           Either info, format, vep, filter or pref.
+        Column 2 - location where to find the data within the VCF, used to 
+                   select the correct parsing function.
+                   options: info, format, vep, filter or pref.
 
-To make a settings file with all available options from a VCF, run:
-    vcf_parse -l path_to_input_vcf > settings.txt
-\n'''
-    )
+        To make a settings file with all available options from a VCF, run:
+            vcf_parse -l path_to_input_vcf > settings.txt
+        \n'''
+    ))
 
 
     # OPTIONAL: Lists all headers in a vcf then exits
     parser.add_argument(
         '-l', '--settings_list', action='store_true', 
-        help=
-'''
-Return a list of all availabile settings to the screen, then exit.
-See settings flag for usage.
-\n'''
-    )
+        help=textwrap.dedent(
+        '''
+        Return a list of all availabile settings to the screen, then exit.
+        See SETTINGS section for usage.
+        \n'''
+    ))
 
 
     return parser.parse_args()
@@ -182,7 +199,7 @@ See settings flag for usage.
 # -- CALL FUNCTIONS ---------------------------------------------------
 
 if __name__ == '__main__':
-    # add logger
+    # setup logger
     logger = logging.getLogger('vcf_parse')
     logger.setLevel(logging.DEBUG)
     handler = logging.StreamHandler()
@@ -192,11 +209,10 @@ if __name__ == '__main__':
     )
     handler.setFormatter(formatter)
     logger.addHandler(handler)
-    print('{}'.format('---'*30))
     logger.info('running vcf_parse.py...')
 
 
-    # Load arguments,make vcf report object and load data
+    # Load arguments, make vcf report object and load data
     args = get_args()
     report = vcf_report()
     report.load_data(args.input, args.output)
@@ -243,6 +259,7 @@ if __name__ == '__main__':
         bed = bed_object()
         bed.apply_multiple(args.bed_folder, report)
 
+    # If no BED files provided, pass
     else:
         logger.info('no BED files provided')
 
