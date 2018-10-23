@@ -46,7 +46,7 @@ class TestVCF(unittest.TestCase):
                 ))
 
 
-    def test_VariantReport_number_variants(self):
+    def test_vcf_parser_number_variants(self):
         """
         Check that number of variants loaded from VCF is correct, 
         should be 96
@@ -56,7 +56,7 @@ class TestVCF(unittest.TestCase):
             )
 
 
-    def test_VariantReport_sample_name(self):
+    def test_vcf_parser_sample_name(self):
         """
         Check that sample name loaded from VCF is correct, 
         should be SAMPLE1
@@ -66,7 +66,7 @@ class TestVCF(unittest.TestCase):
             )
 
 
-    def test_VariantReport_info_fields(self):
+    def test_vcf_parser_info_fields(self):
         """
         Check that info fields loaded from VCF are correct, 
         should be the same as the expected list below
@@ -83,7 +83,7 @@ class TestVCF(unittest.TestCase):
             )
 
 
-    def test_VariantReport_format_fields(self):
+    def test_vcf_parser_format_fields(self):
         """
         Check that format fields loaded from VCF are correct, 
         should be the same as the expected list below
@@ -97,7 +97,7 @@ class TestVCF(unittest.TestCase):
             )
 
 
-    def test_VariantReport_vep_fields(self):
+    def test_vcf_parser_vep_fields(self):
         """
         Check that vep fields loaded from VCF are correct, 
         should be the same as the expected list below
@@ -119,7 +119,20 @@ class TestVCF(unittest.TestCase):
         self.assertEqual(self.report.vep_fields, expected_vep_fields)
 
 
-    def test_VariantReport_load_settings(self):
+    def test_variant_report_number_variants(self):
+        """
+        Check that number of rows in the variant report is correct,
+        should be 477
+        """
+        report_sum = sum(1 for line in open(os.path.abspath(
+            'test/SAMPLE1_VariantReport.txt'
+            )))
+        self.assertEqual(report_sum, 477, 
+            'Number of variants incorrect'
+            )
+
+
+    def test_load_settings(self):
         """
         Check that settings file is loaded correctly, the headers loaded in 
         should be the same as the expected list below
