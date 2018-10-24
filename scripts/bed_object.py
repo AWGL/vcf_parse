@@ -35,21 +35,18 @@ class bed_object:
         self.logger = logging.getLogger('vcf_parse.bed')
 
 
-    def make_intersect_bed(self, bedfile, in_vcf):
+    def make_report_bed(self, in_vcf):
         """
-        - Takes a variant report and turns into a BED file by parsing 
-          the variant description, and saves file as <report>.temp
-        - Intersects the temp and input BED files
-        - Outputs intersect BED containing variants from the report 
-          that fall within the BED file. This file also contains the 
-          original variant description so that the variant report can 
-          easily be filtered in the next function.
+        Takes a variant report and turns into a BED file by parsing 
+        the variant description, and saves file as <report>.temp
         """
         # open variant report to loop through
         with open(in_vcf.report_path, 'r') as report:
             reader = csv.reader(report, delimiter='\t')
+
             # open empty temp file to write output to
             with open(in_vcf.report_path + '.temp', 'w') as out: 
+
                 # for each line, split variant into BED format and save
                 for line in reader:
                     if line[0][0] != '#':
@@ -61,12 +58,15 @@ class bed_object:
             out.close()
         report.close()
 
-        # make output folder if it doesnt exist, based on input folder name
-        in_folder = os.path.split(os.path.dirname(bedfile))[-1]
-        out_folder = os.path.join(in_vcf.output_dir, in_folder)
-        if not os.path.exists(out_folder):
-            os.mkdir(out_folder)
 
+    def make_intersect_bed(self, bedfile, in_vcf):
+        """
+        - Intersects the report BED and input BED files
+        - Outputs intersect BED containing variants from the report 
+          that fall within the BED file. This file also contains the 
+          original variant description so that the variant report can 
+          easily be filtered in the next function.
+        """
         # intersect report bed and input bed, save as variable
         report_bed = in_vcf.report_path + '.temp'
         intersect_command = (
@@ -77,20 +77,19 @@ class bed_object:
         except IOError:
             self.logger.warn('BEDTools error')
 
-        # write bed variable to file, remove report bed
-        self.bed_name = os.path.basename(bedfile).rstrip('.bed')
+        # write bed variable to file
+        self.bed_name = os.path.basename(bedfile).split('.')[0]
         self.intersect_bed = os.path.join(
-            out_folder, '{}_{}_intersect.bed'.format(
+            in_vcf.output_dir, '{}_{}_intersect.bed'.format(
                 in_vcf.sample, self.bed_name))
-        self.out_folder = out_folder
+        #self.out_folder = out_folder
 
         out = open(self.intersect_bed, 'w') 
         out.write(results_intersect)
         out.close()
-        os.remove(report_bed)
 
 
-    def apply_bed(self, bedfile, in_vcf):
+    def apply_bed(self, bedfile, in_vcf, out_folder):
         """
         Takes an intersect BED from the make_intersect_bed function,
         compares the variant ID within this to the variant ID within 
@@ -106,7 +105,7 @@ class bed_object:
 
         # open empty file
         outfile = os.path.join(
-            self.out_folder, '{}_{}_VariantReport.txt'.format(
+            out_folder, '{}_{}_VariantReport.txt'.format(
                 in_vcf.sample, self.bed_name))
         bed = open(outfile, 'w')
         bed_report = csv.writer(bed, delimiter='\t')
@@ -130,23 +129,52 @@ class bed_object:
     def apply_single(self, bedfile, in_vcf):
         """
         Takes a single BED file and calls the functions required to 
-        apply it
+        apply it. Saves to the same directory as the variant report.
         """
         self.logger.info('loading BED file 1 of 1: {}'.format(
             os.path.abspath(bedfile)))
+        
+        # make temporary report BED file
+        self.make_report_bed(in_vcf)
+
+        # make intersect BED and apply to variant report
         self.make_intersect_bed(bedfile, in_vcf)
-        self.apply_bed(bedfile, in_vcf)
+        self.apply_bed(bedfile, in_vcf, in_vcf.output_dir)
+
+        # remove temp report BED
+        os.remove(in_vcf.report_path + '.temp')
 
     
     def apply_multiple(self, bed_folder, in_vcf):
         """
         Takes a folder of BED files, loops through each one in turn and
-        calls the functions required to apply it
+        calls the functions required to apply it.
+        Makes a new directory within the output directory, with the 
+        same name as the input BED folder, to save the output
         """
-        n = len(os.listdir(bed_folder))
+        # make output folder if it doesnt exist, based on input folder name
+        in_folder = os.path.split(os.path.dirname(bed_folder))[-1]
+        out_folder = os.path.join(in_vcf.output_dir, in_folder)
+        if not os.path.exists(out_folder):
+            os.mkdir(out_folder)
+
+        # make temporary report BED file once
+        self.make_report_bed(in_vcf)
+
+        # total number of files for logger
+        n = len([name for name in os.listdir(bed_folder) 
+            if os.path.isfile(os.path.join(bed_folder, name))])
+        
+        # loop through BED files within folder
         for i, file in enumerate(os.listdir(bed_folder)):
             in_bed = os.path.join(bed_folder, file)
-            self.logger.info('loading BED file {} of {}: {}'.format(
-                i+1, n, os.path.abspath(in_bed)))
-            self.make_intersect_bed(in_bed, in_vcf)
-            self.apply_bed(in_bed, in_vcf)
+            if os.path.isfile(in_bed):
+                self.logger.info('loading BED file {} of {}: {}'.format(
+                    i+1, n, os.path.abspath(in_bed)))
+
+                # make intersect BED and apply to variant report
+                self.make_intersect_bed(in_bed, in_vcf)
+                self.apply_bed(in_bed, in_vcf, out_folder)
+
+        # remove temp report BED
+        os.remove(in_vcf.report_path + '.temp')
