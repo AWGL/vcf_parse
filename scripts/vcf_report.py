@@ -135,6 +135,15 @@ class vcf_report:
                         out = [ sample[setting[0]] ]
                     except:
                         out = ['']
+                        
+                    # freq
+                    if setting[0] == 'AD':
+                        ref = float(out[0][0])
+                        alt = float(out[0][1])
+                        freq = float((alt / (ref + alt)) * 100)
+                        out = ['{}%'.format(round(freq, 2))]
+                        
+                    # gt
 
         # vep header
         if setting[1] == 'vep':
@@ -145,7 +154,23 @@ class vcf_report:
                 except:
                     out = ['']   
             else:
-                out += ['No VEP output']         
+                out += ['No VEP output']   
+
+        #TODO custom settings
+        if setting[1] == 'custom':
+            pass
+            # variant frequency
+            if setting[0] == 'var_freq':
+                pass
+            # gt
+            # dbsnp
+            if setting[0] == 'dbsnp':
+                pass
+            # cosmic
+            # hgmd
+            # trim hgvs ids?
+            # intron/exon
+              
         
         return(out)
 
@@ -269,7 +294,7 @@ class vcf_report:
                         out = []
                         vep_split = vep[record].split('|')
 
-                        #TODO Add NM filter 
+                        # filter out any transcripts that dont begin with NM 
                         transcript_col = self.vep_fields.index('Feature')
                         if vep_split[transcript_col].startswith('NM'):
 
