@@ -103,6 +103,98 @@ class vcf_report:
             print(record + '\tvep')
 
 
+    def make_record_settings(self, setting, variant, vep=None):
+        """
+        Makes a line of the variant report if settings are present
+        """
+        out = ['']
+
+        # preferred
+        if setting[1] == 'pref':
+            out = ['Unknown']
+
+        # filter
+        if setting[1] == 'filter':
+            try:
+                out = [str(variant.FILTER)]
+            except:
+                out = ['']
+
+        # info
+        if setting[1] == 'info':
+            try:
+                out = [str(variant.INFO[setting[0]])]
+            except:
+                out = ['']
+
+        # format
+        if setting[1] == 'format':
+            for sample in variant:
+                if sample.sample == self.sample:
+                    try:
+                        out = [ sample[setting[0]] ]
+                    except:
+                        out = ['']
+
+        # vep header
+        if setting[1] == 'vep':
+            if vep:
+                try:
+                    pos = self.vep_fields.index(setting[0])
+                    out = [str(vep[pos])]
+                except:
+                    out = ['']   
+            else:
+                out += ['No VEP output']         
+        
+        return(out)
+
+
+    def make_record_no_settings(self, variant, vep=None):
+        """
+        Makes a line of the variant report if no settings are present
+        """
+        out = []
+        # filter
+        try:
+            out += [variant.FILTER]
+        except:
+            out += ['']
+
+        # preferred
+        out += ['Unknown']
+
+        # info
+        for annotation in self.info_fields:
+            if annotation != 'CSQ':
+                try:
+                    out += [variant.INFO[annotation]]
+                except:
+                    out += ['']
+
+        # format
+        for annotation in self.format_fields:
+            for sample in variant:
+                if sample.sample == self.sample:
+                    try:
+                        out += [sample[annotation]]
+                    except:
+                        out += ['']
+
+        # vep
+        for annotation in self.vep_fields:
+            if vep:
+                try:
+                    pos = self.vep_fields.index(annotation)
+                    out += [str(vep[pos])]
+                except:
+                    out += ['']
+            else:
+                    out += ['No VEP output']
+
+        return(out)
+
+
     def make_report(self):
         """
         Contains a lot of nested loops, overview of loop structure:
@@ -155,174 +247,61 @@ class vcf_report:
 
         # loop through variants
         for var in self.data:
-
-            # make variant name
-            variant = '{}:{}{}>{}'.format(
-                str(var.CHROM), 
-                str(var.POS), 
-                str(var.REF), 
-                str(var.ALT).strip('[]').replace(' ', '')
-            )
             
-            # if VEP annotation exists, loop through each transcript
-            try:
-                vep = var.INFO['CSQ']
-                for record in range(len(vep)):
+            # PASS filter - pass will be empty - [], anything else will be filtered out
+            if var.FILTER:
+                pass
+
+            else:
+                
+                # make variant name
+                variant = '{}:{}{}>{}'.format(
+                    str(var.CHROM), 
+                    str(var.POS), 
+                    str(var.REF), 
+                    str(var.ALT).strip('[]').replace(' ', '')
+                )
+                
+                # if VEP annotation exists, loop through each transcript
+                try:
+                    vep = var.INFO['CSQ']
+                    for record in range(len(vep)):
+                        out = []
+                        vep_split = vep[record].split('|')
+
+                        #TODO Add NM filter 
+                        transcript_col = self.vep_fields.index('Feature')
+                        if vep_split[transcript_col].startswith('NM'):
+
+                            # if settings file provided, parse annotations
+                            if self.annotations:
+                                for annotation in self.annotations:
+                                    out += self.make_record_settings(annotation, var, vep=vep_split)
+
+                            # if no settings file - include all annotations
+                            # filter and preferred must be first, in that order
+                            else:
+                                out = self.make_record_no_settings(var, vep=vep_split)
+                            
+                            # save to file then repeat for all transcripts
+                            report_writer.writerow([self.sample] + [variant] + out)
+
+                # if variant has no vep annotations
+                except:
                     out = []
-                    vep_split = vep[record].split('|')
 
                     # if settings file provided, parse annotations
                     if self.annotations:
                         for annotation in self.annotations:
-
-                            # preferred
-                            if annotation[1] == 'pref':
-                                out += ['Unknown']
-
-                            # filter
-                            if annotation[1] == 'filter':
-                                try:
-                                    out += [str(var.FILTER)]
-                                except:
-                                    out += ['']
-
-                            # info
-                            if annotation[1] == 'info':
-                                try:
-                                    out += [str(var.INFO[annotation[0]])]
-                                except:
-                                    out += ['']
-
-                            # format
-                            if annotation[1] == 'format':
-                                for sample in var:
-                                    if sample.sample == self.sample:
-                                        try:
-                                            out += [ sample[annotation[0]] ]
-                                        except:
-                                            out += ['']
-
-                            # vep header
-                            if annotation[1] == 'vep':
-                                try:
-                                    pos = self.vep_fields.index(annotation[0])
-                                    out += [str(vep_split[pos])]
-                                except:
-                                    out += ['']
-
+                            out += self.make_record_settings(annotation, var)
+                    
                     # if no settings file - include all annotations
                     # filter and preferred must be first, in that order
                     else:
-                        # filter
-                        try:
-                            out += [var.FILTER]
-                        except:
-                            out += ['']
+                        out = self.make_record_no_settings(var)
 
-                        # preferred
-                        out += ['Unknown']
-
-                        # info
-                        for annotation in self.info_fields:
-                            if annotation != 'CSQ':
-                                try:
-                                    out += [var.INFO[annotation]]
-                                except:
-                                    out += ['']
-
-                        # format
-                        for annotation in self.format_fields:
-                            for sample in var:
-                                if sample.sample == self.sample:
-                                    try:
-                                        out += [ sample[ annotation ] ]
-                                    except:
-                                        out += ['']
-
-                        # vep
-                        for annotation in self.vep_fields:
-                            try:
-                                pos = self.vep_fields.index(annotation)
-                                out += [str(vep_split[pos])]
-                            except:
-                                out += ['']
-                    
-                    # save to file then repeat for all transcripts
+                    # save to file then repeat for next variant
                     report_writer.writerow([self.sample] + [variant] + out)
-
-            # if variant has no vep annotations
-            except:
-                out = []
-
-                # if settings file provided, parse annotations
-                if self.annotations:
-                    for annotation in self.annotations:
-                        # preferred
-                        if annotation[1] == 'pref':
-                            out += ['Unknown']
-
-                        # filter
-                        if annotation[1] == 'filter':
-                            try:
-                                out += [str(var.FILTER)]
-                            except:
-                                out += ['']
-
-                        # info
-                        if annotation[1] == 'info':
-                            try:
-                                out += [str(var.INFO[annotation[0]])]
-                            except:
-                                out += ['']
-
-                        # format
-                        if annotation[1] == 'format':
-                            for sample in var:
-                                if sample.sample == self.sample:
-                                    try:
-                                        out += [ sample[annotation[0]] ]
-                                    except:
-                                        out += ['']
-
-                        # vep header
-                        if annotation[1] == 'vep':
-                            out += ['No VEP output']
-                
-                # if no settings file - include all annotations
-                # filter and preferred must be first, in that order
-                else:
-                    # filter
-                    try:
-                        out += [var.FILTER]
-                    except:
-                        out += ['']
-
-                    # preferred
-                    out += ['Unknown']
-
-                    # info
-                    for annotation in self.info_fields:
-                        if annotation != 'CSQ':
-                            try:
-                                out += [var.INFO[annotation]]
-                            except:
-                                out += ['']
-
-                    # format
-                    for annotation in self.format_fields:
-                        for sample in var:
-                            if sample.sample == self.sample:
-                                try:
-                                    out += [sample[annotation]]
-                                except:
-                                    out += ['']
-
-                    # vep
-                    for annotation in self.vep_fields:
-                        out += ['No VEP output']
-
-                # save to file then repeat for next variant
-                report_writer.writerow([self.sample] + [variant] + out)
 
         # once loop has finished, close the output file
         outfile.close()
