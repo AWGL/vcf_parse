@@ -210,9 +210,29 @@ class vcf_report:
             for sample in variant:
                 if sample.sample == self.sample:
                     try:
-                        out += [sample[annotation]]
+                        temp_out = [sample[annotation]]
                     except:
-                        out += ['']
+                        temp_out = ['']
+
+                    # custom setting for allele freq
+                    if annotation == 'AD':
+                        ref = float(temp_out[0][0])
+                        alt = float(temp_out[0][1])
+                        freq = float((alt / (ref + alt)) * 100)
+                        temp_out = ['{}%'.format(round(freq, 2))]
+                        
+                        
+                    # custom setting for genotype
+                    if annotation == 'GT':
+                        gt = temp_out[0]
+                        if gt == '0/1':
+                            temp_out = ['HET']
+                        if gt == '1/1':
+                            temp_out = ['HOM_VAR']
+                        if gt == '0/0':
+                            temp_out = ['HOM_REF']
+                    
+                    out += temp_out
 
         # vep
         for annotation in self.vep_fields:
