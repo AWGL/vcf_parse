@@ -94,7 +94,9 @@ class preferred_transcripts:
             # high strictness means that transcripts must be exact match
             if strictness == 'high':
                 for row in reader:
-                    if row[transcript_column] in self.list:
+                    if row[transcript_column] == 'No VEP output':
+                        writer.writerow(row)
+                    elif row[transcript_column] in self.list:
                         writer.writerow(row[0:preferred_column] + ['True'] + 
                         row[preferred_column+1:])
                     else:
@@ -105,21 +107,24 @@ class preferred_transcripts:
             # value after the . in refseq transcripts
             if strictness == 'low':
                 for row in reader:
-                    match = False
-                    try:
-                        trimmed = row[transcript_column].split('.')[0]
-                    except:
-                        trimmed = row[transcript_column]
-                    for record in self.list:
-                        trimmed_pt = record.split('.')[0]
-                        if trimmed_pt == trimmed:
-                            match = True
-                    if match == True:
-                        writer.writerow(row[0:preferred_column] + ['True'] + 
-                        row[preferred_column+1:])
+                    if row[transcript_column] == 'No VEP output':
+                        writer.writerow(row)
                     else:
-                        writer.writerow(row[0:preferred_column] + ['False'] + 
-                        row[preferred_column+1:])
+                        match = False
+                        try:
+                            trimmed = row[transcript_column].split('.')[0]
+                        except:
+                            trimmed = row[transcript_column]
+                        for record in self.list:
+                            trimmed_pt = record.split('.')[0]
+                            if trimmed_pt == trimmed:
+                                match = True
+                        if match == True:
+                            writer.writerow(row[0:preferred_column] + ['True'] + 
+                            row[preferred_column+1:])
+                        else:
+                            writer.writerow(row[0:preferred_column] + ['False'] + 
+                            row[preferred_column+1:])
 
             # tidy up
             self.logger.info('preferred transcripts applied')
