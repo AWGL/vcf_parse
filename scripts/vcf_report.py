@@ -135,15 +135,23 @@ class vcf_report:
                         out = [ sample[setting[0]] ]
                     except:
                         out = ['']
-                        
-                    # freq
+
+                    # custom setting for allele freq
                     if setting[0] == 'AD':
                         ref = float(out[0][0])
                         alt = float(out[0][1])
                         freq = float((alt / (ref + alt)) * 100)
                         out = ['{}%'.format(round(freq, 2))]
                         
-                    # gt
+                    # custom setting for genotype
+                    if setting[0] == 'GT':
+                        gt = out[0]
+                        if gt == '0/1':
+                            out = ['HET']
+                        if gt == '1/1':
+                            out = ['HOM_VAR']
+                        if gt == '0/0':
+                            out = ['HOM_REF']
 
         # vep header
         if setting[1] == 'vep':
