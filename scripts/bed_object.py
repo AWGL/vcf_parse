@@ -166,15 +166,18 @@ class bed_object:
             if os.path.isfile(os.path.join(bed_folder, name))])
         
         # loop through BED files within folder
-        for i, file in enumerate(os.listdir(bed_folder)):
+        i = 1
+        for file in os.listdir(bed_folder):
             in_bed = os.path.join(bed_folder, file)
             if os.path.isfile(in_bed):
                 self.logger.info('loading BED file {} of {}: {}'.format(
-                    i+1, n, os.path.abspath(in_bed)))
+                    i, n, os.path.abspath(in_bed)))
 
                 # make intersect BED and apply to variant report
                 self.make_intersect_bed(in_bed, in_vcf)
                 self.apply_bed(in_bed, in_vcf, out_folder)
+
+                i+=1
 
         # remove temp report BED
         os.remove(in_vcf.report_path + '.temp')
