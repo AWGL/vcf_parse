@@ -68,6 +68,11 @@ class preferred_transcripts:
                     transcript_id = record[2]
                 else:
                     transcript_id = record[0]
+            if record[0] == 'Preferred':
+                if record[2] != '':
+                    preferred_id = record[2]
+                else:
+                    preferred_id = record[0]
 
         if self.list:
             # open report file and new temp file to save output
@@ -84,7 +89,7 @@ class preferred_transcripts:
             # find the preferred and transcript column numbers
             preferred_column = None
             transcript_column = None
-            preferred_column = header.index('Preferred')
+            preferred_column = header.index(preferred_id)
             transcript_column = header.index(transcript_id)
 
             # if transcript column cant be found, exit the script and tidy up.
