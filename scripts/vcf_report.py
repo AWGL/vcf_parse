@@ -169,7 +169,7 @@ class vcf_report:
                 out = ''  
             
             # custom exon/intron tweak
-            if field == 'EXON' or field == 'INTRON':
+            if field in ('EXON', 'INTRON'):
                 out = out.replace('/', '|')
 
             # custom HGVS coding sequence tweak
@@ -179,7 +179,7 @@ class vcf_report:
                 out = out.replace(transcript_id, '')'''
 
             # custom HGVS protein sequence tweak
-            if field == 'HGVSc' or field == 'HGVSp':
+            if field in ('HGVSc', 'HGVSp'):
                 try:
                     split = out.split(':')
                     out = split[1]
@@ -187,7 +187,7 @@ class vcf_report:
                     pass
 
             # custom existing variantion field tweak
-            if field == 'dbSNP' or field == 'Cosmic' or field == 'HGMD':
+            if field in ('dbSNP', 'Cosmic', 'HGMD'):
                 # split existing variation field by & sign
                 existing_variation_pos = self.vep_fields.index('Existing_variation')
                 existing_variation = str(vep[existing_variation_pos]).split('&')
@@ -206,6 +206,22 @@ class vcf_report:
                     if item.startswith(id):
                         out_list += '{},'.format(str(item))
                 out = out_list.rstrip(',')
+
+            # custom exac/1kg tweak
+            if field in ('ExAC_AFR_MAF', 'ExAC_AMR_MAF', 'ExAC_EAS_MAF', 'ExAC_FIN_MAF',
+                'ExAC_NFE_MAF', 'ExAC_SAS_MAF', 'ExAC_OTH_MAF', 'AFR_MAF', 'AMR_MAF',
+                'EAS_MAF', 'EUR_MAF', 'SAS_MAF'):
+
+                out_string = ''
+
+                try:
+                    for record in out.split('&'):
+                        split = record.split(':')
+                        percent = float(split[1]) * 100
+                        out_string += '{}:{}%,'.format(split[0], str(percent))
+                    out = out_string.rstrip(',')
+                except:
+                    pass
 
         else:
             out = 'No VEP output'
