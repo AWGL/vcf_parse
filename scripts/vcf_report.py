@@ -113,6 +113,22 @@ class vcf_report:
         return(var_name)
 
 
+    def parse_filter_field(self, variant):
+        try:
+            out = [str(variant.FILTER)]
+        except:
+            out = ['']
+        return(out)
+
+
+    def parse_info_field(self, variant, field):
+        try:
+            out = [str(variant.INFO[field])]
+        except:
+            out = ['']
+        return(out)
+
+
     def parse_format_field(self, variant, field):
         for sample in variant:
             if sample.sample == self.sample:
@@ -154,14 +170,6 @@ class vcf_report:
         return(out)
 
 
-    def parse_info_field(self, variant, field):
-        try:
-            out = [str(variant.INFO[field])]
-        except:
-            out = ['']
-        return(out)
-
-
     def make_record_settings(self, setting, variant, vep=None):
         """
         Makes a line of the variant report if settings are present
@@ -174,10 +182,7 @@ class vcf_report:
 
         # filter
         if setting[1] == 'filter':
-            try:
-                out = [str(variant.FILTER)]
-            except:
-                out = ['']
+            out = self.parse_filter_field(variant)
 
         # info
         if setting[1] == 'info':
@@ -187,7 +192,6 @@ class vcf_report:
         if setting[1] == 'format':
             out = self.parse_format_field(variant, setting[0])
 
-            
         # vep header
         if setting[1] == 'vep':
             out = self.parse_vep_field(setting[0], vep)
@@ -213,15 +217,12 @@ class vcf_report:
         """
         out = []
         # filter
-        try:
-            out += [variant.FILTER]
-        except:
-            out += ['']
+        out += self.parse_filter_field(variant)
 
         # preferred
         out += ['Unknown']
 
-        # info
+        # info - don't include CSQ field, this is parsed as part of the vep parser
         for annotation in self.info_fields:
             if annotation != 'CSQ':
                 out += self.parse_info_field(variant, annotation)
@@ -235,6 +236,7 @@ class vcf_report:
             out += self.parse_vep_field(annotation, vep)
 
         return(out)
+
 
     def make_header(self):
         # Sample and variant are always the first two columns
