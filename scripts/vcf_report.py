@@ -103,6 +103,16 @@ class vcf_report:
             print(record + '\tvep')
 
 
+    def make_variant_name(self, variant):
+        var_name = '{}:{}{}>{}'.format(
+            str(variant.CHROM), 
+            str(variant.POS), 
+            str(variant.REF), 
+            str(variant.ALT).strip('[]').replace(' ', '')
+        )
+        return(var_name)
+
+
     def parse_format_field(self, variant, field):
         for sample in variant:
             if sample.sample == self.sample:
@@ -274,7 +284,6 @@ class vcf_report:
         """
         self.logger.info('writing variant report')
 
-        # -- report body ----------------------------------------------
         # open empty output file
         outfile = open(self.report_path, 'w')
         report_writer = csv.writer(outfile, delimiter='\t')
@@ -287,14 +296,8 @@ class vcf_report:
                 pass
 
             else:
-                
                 # make variant name
-                variant = '{}:{}{}>{}'.format(
-                    str(var.CHROM), 
-                    str(var.POS), 
-                    str(var.REF), 
-                    str(var.ALT).strip('[]').replace(' ', '')
-                )
+                variant = self.make_variant_name(var)
                 
                 # if VEP annotation exists, loop through each transcript
                 try:
