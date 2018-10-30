@@ -240,7 +240,7 @@ if __name__ == '__main__':
     if args.transcripts:
         pt = preferred_transcripts()
         pt.load(args.transcripts)
-        pt.apply(report.report_path, args.transcript_strictness)
+        pt.apply(report, args.transcript_strictness)
     else:
         logger.info('no preferred transcripts file provided -- preferred ' +
         'transcripts column will all be labelled as "Unknown"')

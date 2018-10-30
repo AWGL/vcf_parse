@@ -52,16 +52,27 @@ class preferred_transcripts:
             self.list = None
 
 
-    def apply(self, report, strictness, transcript_id='Feature'):
+    def apply(self, report, strictness):
         """
         Take a variant report and loop through each row, change 
         preferred transcript to true if there's a match, otherwise 
         change to false.
         """
+        # set report path
+        report_path = report.report_path
+
+        # set transcript_id
+        for record in report.annotations:
+            if record[0] == 'Feature':
+                if record[2] != '':
+                    transcript_id = record[2]
+                else:
+                    transcript_id = record[0]
+
         if self.list:
             # open report file and new temp file to save output
-            report_temp = os.path.join(report + '.temp')
-            f1 = open(report, 'rb')
+            report_temp = os.path.join(report_path + '.temp')
+            f1 = open(report_path, 'rb')
             reader = csv.reader(f1, delimiter='\t')
             f2 = open(report_temp, 'wb')
             writer = csv.writer(f2, delimiter='\t')
@@ -130,8 +141,8 @@ class preferred_transcripts:
             self.logger.info('preferred transcripts applied')
             f1.close()
             f2.close()
-            os.remove(report)
-            os.rename(report_temp, report)
+            os.remove(report_path)
+            os.rename(report_temp, report_path)
         
         # if error, skip adding preferred transcripts
         else:
