@@ -181,10 +181,31 @@ class vcf_report:
                 protein_id = str(vep[protein_pos]) + ':'
                 out = out.replace(protein_id, '')
 
+            # custom existing variantion field tweak
+            if field == 'dbSNP' or field == 'Cosmic' or field == 'HGMD':
+                # split existing variation field by & sign
+                existing_variation_pos = self.vep_fields.index('Existing_variation')
+                existing_variation = str(vep[existing_variation_pos]).split('&')
+
+                # define identifier for each different annotation type
+                if field == 'dbSNP':
+                    id = 'rs'
+                if field == 'Cosmic':
+                    id = 'COSM'
+                if field == 'HGMD':
+                    id = 'CM'
+
+                # make output string containing only records of the desired type
+                out_list = ''
+                for item in existing_variation:
+                    if item.startswith(id):
+                        out_list += '{},'.format(str(item))
+                out = out_list.rstrip(',')
+
         else:
             out = 'No VEP output'
         
-        return( [out] )
+        return([out])
 
 
     def make_record_settings(self, setting, variant, vep=None):
