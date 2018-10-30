@@ -103,6 +103,34 @@ class vcf_report:
             print(record + '\tvep')
 
 
+    def parse_format_field(self, variant, field):
+        for sample in variant:
+            if sample.sample == self.sample:
+                try:
+                    out = [ sample[field] ]
+                except:
+                    out = ['']
+
+                # custom setting for allele freq
+                if field == 'AD':
+                    ref = float(out[0][0])
+                    alt = float(out[0][1])
+                    freq = float((alt / (ref + alt)) * 100)
+                    out = ['{}%'.format(round(freq, 2))]
+                    
+                # custom setting for genotype
+                if field == 'GT':
+                    gt = out[0]
+                    if gt == '0/1':
+                        out = ['HET']
+                    if gt == '1/1':
+                        out = ['HOM_VAR']
+                    if gt == '0/0':
+                        out = ['HOM_REF']
+
+        return(out)
+
+
     def make_record_settings(self, setting, variant, vep=None):
         """
         Makes a line of the variant report if settings are present
@@ -129,30 +157,9 @@ class vcf_report:
 
         # format
         if setting[1] == 'format':
-            for sample in variant:
-                if sample.sample == self.sample:
-                    try:
-                        out = [ sample[setting[0]] ]
-                    except:
-                        out = ['']
+            out = self.parse_format_field(variant, setting[0])
 
-                    # custom setting for allele freq
-                    if setting[0] == 'AD':
-                        ref = float(out[0][0])
-                        alt = float(out[0][1])
-                        freq = float((alt / (ref + alt)) * 100)
-                        out = ['{}%'.format(round(freq, 2))]
-                        
-                    # custom setting for genotype
-                    if setting[0] == 'GT':
-                        gt = out[0]
-                        if gt == '0/1':
-                            out = ['HET']
-                        if gt == '1/1':
-                            out = ['HOM_VAR']
-                        if gt == '0/0':
-                            out = ['HOM_REF']
-
+            
         # vep header
         if setting[1] == 'vep':
             if vep:
@@ -162,7 +169,7 @@ class vcf_report:
                 except:
                     out = ['']   
             else:
-                out += ['No VEP output']   
+                out = ['No VEP output']   
 
         #TODO custom settings
         if setting[1] == 'custom':
@@ -207,32 +214,7 @@ class vcf_report:
 
         # format
         for annotation in self.format_fields:
-            for sample in variant:
-                if sample.sample == self.sample:
-                    try:
-                        temp_out = [sample[annotation]]
-                    except:
-                        temp_out = ['']
-
-                    # custom setting for allele freq
-                    if annotation == 'AD':
-                        ref = float(temp_out[0][0])
-                        alt = float(temp_out[0][1])
-                        freq = float((alt / (ref + alt)) * 100)
-                        temp_out = ['{}%'.format(round(freq, 2))]
-                        
-                        
-                    # custom setting for genotype
-                    if annotation == 'GT':
-                        gt = temp_out[0]
-                        if gt == '0/1':
-                            temp_out = ['HET']
-                        if gt == '1/1':
-                            temp_out = ['HOM_VAR']
-                        if gt == '0/0':
-                            temp_out = ['HOM_REF']
-                    
-                    out += temp_out
+            out += self.parse_format_field(variant, annotation)
 
         # vep
         for annotation in self.vep_fields:
