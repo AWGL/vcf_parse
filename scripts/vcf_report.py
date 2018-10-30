@@ -161,13 +161,30 @@ class vcf_report:
         if vep:
             try:
                 pos = self.vep_fields.index(field)
-                out = [str(vep[pos])]
+                out = str(vep[pos])
             except:
-                out = ['']   
+                out = ''  
+            
+            # custom exon/intron tweak
+            if field == 'EXON' or field == 'INTRON':
+                out = out.replace('/', '|')
+
+            # custom HGVS coding sequence tweak
+            if field == 'HGVSc':
+                transcript_pos = self.vep_fields.index('Feature')
+                transcript_id = str(vep[transcript_pos]) + ':'
+                out = out.replace(transcript_id, '')
+
+            # custom HGVS protein sequence tweak
+            if field == 'HGVSp':
+                protein_pos = self.vep_fields.index('ENSP')
+                protein_id = str(vep[protein_pos]) + ':'
+                out = out.replace(protein_id, '')
+
         else:
-            out = ['No VEP output'] 
+            out = 'No VEP output'
         
-        return(out)
+        return( [out] )
 
 
     def make_record_settings(self, setting, variant, vep=None):
@@ -204,8 +221,6 @@ class vcf_report:
                 pass
             # cosmic
             # hgmd
-            # trim hgvs ids?
-            # intron/exon
               
         
         return(out)
