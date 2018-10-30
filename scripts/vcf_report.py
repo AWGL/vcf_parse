@@ -231,7 +231,7 @@ class vcf_report:
 
     def make_header(self):
         # Sample and variant are always the first two columns
-        header = '#Sample\tVariant'
+        header = 'SampleID\tVariant'
 
         # settings file provided
         if self.annotations:

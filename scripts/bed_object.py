@@ -1,7 +1,7 @@
 #!/anaconda3/envs/python2/bin/python
 
 """
-vcf_report.py
+bed_object.py
 
 Object that deals with the loading and intersecting of BED files. 
 Loaded as part of the vcf_parse.py program.
@@ -9,7 +9,7 @@ Loaded as part of the vcf_parse.py program.
 Author:     Erik Waskiewicz
 Created:    31 Aug 2018
 Version:    0.1.0
-Updated:    29 Oct 2018
+Updated:    30 Oct 2018
 """
 
 
@@ -49,7 +49,7 @@ class bed_object:
 
                 # for each line, split variant into BED format and save
                 for line in reader:
-                    if line[0][0] != '#':
+                    if line[0] != 'SampleID':
                         variant = line[1].split(':')
                         pos = re.sub('[^0-9]', '', variant[1])
                         out.write('{}\t{}\t{}\t{}\n'.format(
