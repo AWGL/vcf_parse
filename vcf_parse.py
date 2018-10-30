@@ -30,6 +30,7 @@ import textwrap
 from scripts.vcf_report import vcf_report
 from scripts.preferred_transcripts import preferred_transcripts
 from scripts.bed_object import bed_object
+from scripts.known_variants import known_variants
 
 
 ## -- PARSE INPUT ARGUMENTS -------------------------------------------
@@ -95,7 +96,7 @@ def get_args():
     ))
 
 
-    # OPTIONAL: List of preferred transcripts
+    # OPTIONAL: Preferred transcripts strictness
     parser.add_argument(
         '-T', '--transcript_strictness', action='store', default='low', 
         help=textwrap.dedent(
@@ -149,6 +150,19 @@ def get_args():
         The file names will be the same as the original variant report, with 
         the BED file name added to them.
         Cannot be used together with -b flag.
+        \n'''
+    ))
+
+
+    # OPTIONAL: File containing the headers for the report
+    parser.add_argument(
+        '-k', '--known_variants', action='store', 
+        help=textwrap.dedent(
+        '''
+        Filepath to known variants file. 
+
+        This is a VCF file containing any known variants with an annotation 
+        named 'Classification' within the INFO field for each variant.
         \n'''
     ))
 
@@ -235,8 +249,7 @@ if __name__ == '__main__':
     report.make_report()
 
 
-    # If preferred transcripts provided, apply preferred transcripts to
-    # variant report
+    # If preferred transcripts provided, apply to variant report
     if args.transcripts:
         pt = preferred_transcripts()
         pt.load(args.transcripts)
@@ -244,6 +257,17 @@ if __name__ == '__main__':
     else:
         logger.info('no preferred transcripts file provided -- preferred ' +
         'transcripts column will all be labelled as "Unknown"')
+
+
+    # If known variants provided, apply to variant report
+    if args.known_variants:
+        known = known_variants()
+        known.load_known_variants(args.known_variants)
+        known.apply_known_variants(report)
+    
+    else:
+        logger.info('no known variants file provided -- Classification ' +
+        'column will be empty')
 
 
     # If single BED file provided, make variant report with BED file 
