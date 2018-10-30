@@ -76,7 +76,10 @@ class vcf_report:
         with open(settings_file, 'r') as file:
             reader = csv.reader(file, delimiter='\t')
             for line in reader:
-                settings += [[ line[0], line[1] ]]
+                try:
+                    settings += [[ line[0], line[1], line[2] ]]
+                except:
+                    settings += [[ line[0], line[1], '' ]]
             self.annotations = settings
             self.logger.info('loading report settings completed')
 
@@ -208,6 +211,34 @@ class vcf_report:
         return([out])
 
 
+    def make_header(self):
+        # Sample and variant are always the first two columns
+        header = '#Sample\tVariant'
+
+        # settings file provided
+        if self.annotations:
+            for annotation in self.annotations:
+                if annotation[2] != '':
+                    header +=  '\t' + annotation[2]
+                else:
+                    header +=  '\t' + annotation[0]
+
+        # settings file not provided - all headers
+        else:
+            header += '\tFilter\tPreferred'
+            for annotation in self.info_fields:
+                if annotation != 'CSQ':
+                    header += '\t' + annotation
+            for annotation in self.format_fields:
+                header += '\t' + annotation
+            for annotation in self.vep_fields:
+                header += '\t' + annotation
+        
+        # add newline and return
+        header += '\n'
+        return(header)
+
+
     def make_record_settings(self, setting, variant, vep=None):
         """
         Makes a line of the variant report if settings are present
@@ -234,16 +265,6 @@ class vcf_report:
         if setting[1] == 'vep':
             out = self.parse_vep_field(setting[0], vep)
 
-        #TODO custom settings
-        if setting[1] == 'custom':
-            pass
-            # dbsnp
-            if setting[0] == 'dbsnp':
-                pass
-            # cosmic
-            # hgmd
-              
-        
         return(out)
 
 
@@ -272,31 +293,6 @@ class vcf_report:
             out += self.parse_vep_field(annotation, vep)
 
         return(out)
-
-
-    def make_header(self):
-        # Sample and variant are always the first two columns
-        header = '#Sample\tVariant'
-
-        # settings file provided
-        if self.annotations:
-            for annotation in self.annotations:
-                header +=  '\t' + annotation[0]
-
-        # settings file not provided - all headers
-        else:
-            header += '\tFilter\tPreferred'
-            for annotation in self.info_fields:
-                if annotation != 'CSQ':
-                    header += '\t' + annotation
-            for annotation in self.format_fields:
-                header += '\t' + annotation
-            for annotation in self.vep_fields:
-                header += '\t' + annotation
-        
-        # add newline and return
-        header += '\n'
-        return(header)
 
 
     def make_report(self):
