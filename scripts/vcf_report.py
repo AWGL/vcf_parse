@@ -154,6 +154,14 @@ class vcf_report:
         return(out)
 
 
+    def parse_info_field(self, variant, field):
+        try:
+            out = [str(variant.INFO[field])]
+        except:
+            out = ['']
+        return(out)
+
+
     def make_record_settings(self, setting, variant, vep=None):
         """
         Makes a line of the variant report if settings are present
@@ -173,10 +181,7 @@ class vcf_report:
 
         # info
         if setting[1] == 'info':
-            try:
-                out = [str(variant.INFO[setting[0]])]
-            except:
-                out = ['']
+            out = self.parse_info_field(variant, setting[0])
 
         # format
         if setting[1] == 'format':
@@ -219,10 +224,7 @@ class vcf_report:
         # info
         for annotation in self.info_fields:
             if annotation != 'CSQ':
-                try:
-                    out += [variant.INFO[annotation]]
-                except:
-                    out += ['']
+                out += self.parse_info_field(variant, annotation)
 
         # format
         for annotation in self.format_fields:
@@ -235,7 +237,6 @@ class vcf_report:
         return(out)
 
     def make_header(self):
-        # -- report header --------------------------------------------
         # Sample and variant are always the first two columns
         header = '#Sample\tVariant'
 
