@@ -173,16 +173,18 @@ class vcf_report:
                 out = out.replace('/', '|')
 
             # custom HGVS coding sequence tweak
-            if field == 'HGVSc':
+            '''if field == 'HGVSc':
                 transcript_pos = self.vep_fields.index('Feature')
                 transcript_id = str(vep[transcript_pos]) + ':'
-                out = out.replace(transcript_id, '')
+                out = out.replace(transcript_id, '')'''
 
             # custom HGVS protein sequence tweak
-            if field == 'HGVSp':
-                protein_pos = self.vep_fields.index('ENSP')
-                protein_id = str(vep[protein_pos]) + ':'
-                out = out.replace(protein_id, '')
+            if field == 'HGVSc' or field == 'HGVSp':
+                try:
+                    split = out.split(':')
+                    out = split[1]
+                except:
+                    pass
 
             # custom existing variantion field tweak
             if field == 'dbSNP' or field == 'Cosmic' or field == 'HGMD':
