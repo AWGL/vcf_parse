@@ -131,6 +131,19 @@ class vcf_report:
         return(out)
 
 
+    def parse_vep_field(self, field, vep):
+        if vep:
+            try:
+                pos = self.vep_fields.index(field)
+                out = [str(vep[pos])]
+            except:
+                out = ['']   
+        else:
+            out = ['No VEP output'] 
+        
+        return(out)
+
+
     def make_record_settings(self, setting, variant, vep=None):
         """
         Makes a line of the variant report if settings are present
@@ -162,22 +175,11 @@ class vcf_report:
             
         # vep header
         if setting[1] == 'vep':
-            if vep:
-                try:
-                    pos = self.vep_fields.index(setting[0])
-                    out = [str(vep[pos])]
-                except:
-                    out = ['']   
-            else:
-                out = ['No VEP output']   
+            out = self.parse_vep_field(setting[0], vep)
 
         #TODO custom settings
         if setting[1] == 'custom':
             pass
-            # variant frequency
-            if setting[0] == 'var_freq':
-                pass
-            # gt
             # dbsnp
             if setting[0] == 'dbsnp':
                 pass
@@ -218,14 +220,7 @@ class vcf_report:
 
         # vep
         for annotation in self.vep_fields:
-            if vep:
-                try:
-                    pos = self.vep_fields.index(annotation)
-                    out += [str(vep[pos])]
-                except:
-                    out += ['']
-            else:
-                    out += ['No VEP output']
+            out += self.parse_vep_field(annotation, vep)
 
         return(out)
 
