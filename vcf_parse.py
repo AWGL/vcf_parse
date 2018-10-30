@@ -16,11 +16,11 @@ Usage:  vcf_parse.py [-h] [-v]
 
 Author:     Erik Waskiewicz
 Created:    31 Aug 2018
-Version:    1.0.0
-Updated:    23 Oct 2018
+Version:    0.1.0
+Updated:    30 Oct 2018
 """
-__version__ = '1.0.0'
-__updated__ = '23 Oct 2018'
+__version__ = '0.1.0'
+__updated__ = '30 Oct 2018'
 
 
 import argparse

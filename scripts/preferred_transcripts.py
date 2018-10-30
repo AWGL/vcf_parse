@@ -8,8 +8,8 @@ files. Loaded as part of the vcf_parse.py program.
 
 Author:     Erik Waskiewicz
 Created:    31 Aug 2018
-Version:    1.0.0
-Updated:    23 Oct 2018
+Version:    0.1.0
+Updated:    30 Oct 2018
 """
 
 
@@ -61,7 +61,7 @@ class preferred_transcripts:
         # set report path
         report_path = report.report_path
 
-        # set transcript_id
+        # set transcript and preferred ids
         for record in report.annotations:
             if record[0] == 'Feature':
                 if record[2] != '':
