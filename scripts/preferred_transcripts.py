@@ -62,17 +62,21 @@ class preferred_transcripts:
         report_path = report.report_path
 
         # set transcript and preferred ids
-        for record in report.annotations:
-            if record[0] == 'Feature':
-                if record[2] != '':
-                    transcript_id = record[2]
-                else:
-                    transcript_id = record[0]
-            if record[0] == 'Preferred':
-                if record[2] != '':
-                    preferred_id = record[2]
-                else:
-                    preferred_id = record[0]
+        if report.annotations:
+            for record in report.annotations:
+                if record[0] == 'Feature':
+                    if record[2] != '':
+                        transcript_id = record[2]
+                    else:
+                        transcript_id = record[0]
+                if record[0] == 'Preferred':
+                    if record[2] != '':
+                        preferred_id = record[2]
+                    else:
+                        preferred_id = record[0]
+        else:
+            transcript_id = 'Feature'
+            preferred_id = 'Preferred'
 
         if self.list:
             # open report file and new temp file to save output
