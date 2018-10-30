@@ -10,6 +10,7 @@ Usage:  vcf_parse.py [-h] [-v]
                      [-O OUTPUT]  
                      [-t TRANSCRIPTS] [-T TRANSCRIPT_STRICTNESS] 
                      [-b BED | -B BED_FOLDER] 
+                     [-k KNOWN_VARIANTS]
                      [-s SETTINGS] [-l] 
                      input
         vcf_parse.py -h for full description of options.
