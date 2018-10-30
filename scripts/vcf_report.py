@@ -224,6 +224,31 @@ class vcf_report:
 
         return(out)
 
+    def make_header(self):
+        # -- report header --------------------------------------------
+        # Sample and variant are always the first two columns
+        header = '#Sample\tVariant'
+
+        # settings file provided
+        if self.annotations:
+            for annotation in self.annotations:
+                header +=  '\t' + annotation[0]
+
+        # settings file not provided - all headers
+        else:
+            header += '\tFilter\tPreferred'
+            for annotation in self.info_fields:
+                if annotation != 'CSQ':
+                    header += '\t' + annotation
+            for annotation in self.format_fields:
+                header += '\t' + annotation
+            for annotation in self.vep_fields:
+                header += '\t' + annotation
+        
+        # add newline and return
+        header += '\n'
+        return(header)
+
 
     def make_report(self):
         """
@@ -248,27 +273,6 @@ class vcf_report:
         - remove duplicate records  
         """
         self.logger.info('writing variant report')
-
-        # -- report header --------------------------------------------
-        # Sample and variant are always the first two columns
-        header = '#Sample\tVariant'
-
-        # settings file provided
-        if self.annotations:
-            for annotation in self.annotations:
-                header +=  '\t' + annotation[0]
-
-        # settings file not provided - all headers
-        else:
-            header += '\tFilter\tPreferred'
-            for annotation in self.info_fields:
-                if annotation != 'CSQ':
-                    header += '\t' + annotation
-            for annotation in self.format_fields:
-                header += '\t' + annotation
-            for annotation in self.vep_fields:
-                header += '\t' + annotation
-        header += '\n'
 
         # -- report body ----------------------------------------------
         # open empty output file
@@ -341,7 +345,7 @@ class vcf_report:
 
         # write final report
         out = open(self.report_path, 'w') 
-        out.write(header)
+        out.write(self.make_header())
         out.write(uniq)
         out.close()
         self.logger.info('variant report completed - {}'.format(self.report_path))
