@@ -11,7 +11,7 @@ Usage:  vcf_parse.py [-h] [-v]
                      [-t TRANSCRIPTS] [-T TRANSCRIPT_STRICTNESS] 
                      [-b BED | -B BED_FOLDER] 
                      [-k KNOWN_VARIANTS]
-                     [-s SETTINGS] [-l] 
+                     [-c CONFIG] [-l] 
                      input
         vcf_parse.py -h for full description of options.
 
@@ -42,7 +42,7 @@ def get_args():
     See descriptions for full detail of each argument.
     """
 
-    # Make empty argparse object
+    # Make argparse object, add description
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter,
         description=textwrap.dedent(
@@ -60,8 +60,7 @@ def get_args():
         version=
             '%(prog)s\nversion:\t{}\nlast updated:\t{}'.format(
                 __version__, __updated__
-            )
-    )
+    ))
 
 
     # Arguments (see help string for full descriptions):
@@ -155,15 +154,25 @@ def get_args():
     ))
 
 
-    # OPTIONAL: File containing the headers for the report
+    # OPTIONAL: File containing known variants
     parser.add_argument(
         '-k', '--known_variants', action='store', 
         help=textwrap.dedent(
         '''
         Filepath to known variants file. 
 
-        This is a VCF file containing any known variants with an annotation 
-        named 'Classification' within the INFO field for each variant.
+        This is a VCF file containing any known variants and an associated 
+        classification. The classification will be added to the variant 
+        report. The VCF must have an annotation named 'Classification' within 
+        the INFO field for each variant.
+
+        Key:
+        0 - Artifact
+        1 - Benign
+        2 - Likely benign
+        3 - VUS
+        4 - Likely pathogenic
+        5 - Pathogenic
         \n'''
     ))
 
@@ -182,14 +191,16 @@ def get_args():
         The columns in the variant report will be in the same order as the 
         order in which the annotations appear in the config file.
 
-        Each row contains two columns:
+        Each row contains:
 
-        Column 1 - annotations headers, these must match up with how they 
-                   appear in the VCF (case sensitive), 
+        Column 1 - Required. Annotation headers, these must match up with how
+                   they appear in the VCF (case sensitive).
 
-        Column 2 - location where to find the data within the VCF, used to 
-                   select the correct parsing function.
+        Column 2 - Required. Location where to find the data within the VCF, 
+                   used to select the correct parsing function.
                    options: info, format, vep, filter or pref.
+
+        Column 3 - Optional. Alternative name for column header.
 
         To make a config file with all available options from a VCF, run:
             vcf_parse -l path_to_input_vcf > config.txt
