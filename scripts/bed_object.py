@@ -9,7 +9,7 @@ Loaded as part of the vcf_parse.py program.
 Author:     Erik Waskiewicz
 Created:    31 Aug 2018
 Version:    0.1.0
-Updated:    30 Oct 2018
+Updated:    31 Oct 2018
 """
 
 
@@ -116,7 +116,7 @@ class bed_object:
         with open(in_vcf.report_path) as report:
             results = csv.reader(report, delimiter='\t')
             for line in results:
-                if line[0][0] == '#':
+                if line[0] == 'SampleID':
                     bed_report.writerow(line)
                 if line[1] in keep:
                     bed_report.writerow(line)
