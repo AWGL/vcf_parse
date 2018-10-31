@@ -92,16 +92,21 @@ class vcf_report:
         # preferred transcript and filter fields
         print('Preferred\tpref')
         print('Filter\tfilter')
+        print('Classification\tcustom')
 
         # info fields
         for record in self.info_fields:
             print(record + '\tinfo')
 
         # format fields
+        print('Frequency\tformat')
         for record in self.format_fields:
             print(record + '\tformat')
 
         # vep fields
+        print('dbSNP\tvep')
+        print('Cosmic\tvep')
+        print('HGMD\tvep')
         for record in self.vep_fields:
             print(record + '\tvep')
 
@@ -141,7 +146,8 @@ class vcf_report:
                     out = ['']
 
                 # custom setting for allele freq
-                if field == 'AD':
+                if field == 'Frequency':
+                    out = [ sample['AD'] ]
                     ref = float(out[0][0])
                     alt = float(out[0][1])
                     freq = float((alt / (ref + alt)) * 100)
@@ -172,13 +178,7 @@ class vcf_report:
             if field in ('EXON', 'INTRON'):
                 out = out.replace('/', '|')
 
-            # custom HGVS coding sequence tweak
-            '''if field == 'HGVSc':
-                transcript_pos = self.vep_fields.index('Feature')
-                transcript_id = str(vep[transcript_pos]) + ':'
-                out = out.replace(transcript_id, '')'''
-
-            # custom HGVS protein sequence tweak
+            # custom HGVS coding/protein sequence tweak
             if field in ('HGVSc', 'HGVSp'):
                 try:
                     split = out.split(':')
@@ -243,7 +243,7 @@ class vcf_report:
 
         # settings file not provided - all headers
         else:
-            header += '\tFilter\tPreferred'
+            header += '\tPreferred\tClassification\tFilter'
             for annotation in self.info_fields:
                 if annotation != 'CSQ':
                     header += '\t' + annotation
@@ -291,11 +291,13 @@ class vcf_report:
         Makes a line of the variant report if no settings are present
         """
         out = []
-        # filter
-        out += self.parse_filter_field(variant)
 
         # preferred
         out += ['Unknown']
+        out += ['']
+
+        # filter
+        out += self.parse_filter_field(variant)
 
         # info - don't include CSQ field, this is parsed as part of the vep parser
         for annotation in self.info_fields:
