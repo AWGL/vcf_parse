@@ -9,7 +9,7 @@ files. Loaded as part of the vcf_parse.py program.
 Author:     Erik Waskiewicz
 Created:    31 Aug 2018
 Version:    0.1.0
-Updated:    30 Oct 2018
+Updated:    31 Oct 2018
 """
 
 
@@ -62,8 +62,8 @@ class preferred_transcripts:
         report_path = report.report_path
 
         # set transcript and preferred ids
-        if report.annotations:
-            for record in report.annotations:
+        if report.config:
+            for record in report.config:
                 if record[0] == 'Feature':
                     if record[2] != '':
                         transcript_id = record[2]

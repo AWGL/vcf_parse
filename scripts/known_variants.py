@@ -9,7 +9,7 @@ Loaded as part of the vcf_parse.py program.
 Author:     Erik Waskiewicz
 Created:    30 Oct 2018
 Version:    0.1.0
-Updated:    30 Oct 2018
+Updated:    31 Oct 2018
 """
 
 
@@ -68,8 +68,8 @@ class known_variants:
         report_path = report.report_path
 
         # find classification column in config file
-        if report.annotations:
-            for record in report.annotations:
+        if report.config:
+            for record in report.config:
                 if record[0] == 'Classification':
                     if record[2] != '':
                         classification_id = record[2]

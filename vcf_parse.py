@@ -18,10 +18,10 @@ Usage:  vcf_parse.py [-h] [-v]
 Author:     Erik Waskiewicz
 Created:    31 Aug 2018
 Version:    0.1.0
-Updated:    30 Oct 2018
+Updated:    31 Oct 2018
 """
 __version__ = '0.1.0'
-__updated__ = '30 Oct 2018'
+__updated__ = '31 Oct 2018'
 
 
 import argparse
@@ -170,17 +170,17 @@ def get_args():
 
     # OPTIONAL: File containing the headers for the report
     parser.add_argument(
-        '-s', '--settings', action='store', 
+        '-c', '--config', action='store', 
         help=textwrap.dedent(
         '''
-        Filepath to settings file. 
+        Filepath to config file. 
 
         This is a tab seperated text file containing a number of rows, where 
         each row specifies an annotation to be included in the variant report.
-        Only annotations included in the settings file will be included in the
+        Only annotations included in the config file will be included in the
         variant report.
         The columns in the variant report will be in the same order as the 
-        order in which the annotations appear in the settings file.
+        order in which the annotations appear in the config file.
 
         Each row contains two columns:
 
@@ -191,22 +191,21 @@ def get_args():
                    select the correct parsing function.
                    options: info, format, vep, filter or pref.
 
-        To make a settings file with all available options from a VCF, run:
-            vcf_parse -l path_to_input_vcf > settings.txt
+        To make a config file with all available options from a VCF, run:
+            vcf_parse -l path_to_input_vcf > config.txt
         \n'''
     ))
 
 
     # OPTIONAL: Lists all headers in a vcf then exits
     parser.add_argument(
-        '-l', '--settings_list', action='store_true', 
+        '-l', '--config_list', action='store_true', 
         help=textwrap.dedent(
         '''
-        Return a list of all availabile settings to the screen, then exit.
-        See SETTINGS section for usage.
+        Return a list of all availabile config to the screen, then exit.
+        See CONFIG section for usage.
         \n'''
     ))
-
 
     return parser.parse_args()
 
@@ -234,16 +233,16 @@ if __name__ == '__main__':
 
 
     # If -l flag called, print headers and exit
-    if args.settings_list:
-        report.list_settings()
+    if args.config_list:
+        report.list_config()
         exit()
 
 
-    # If settings file provided, load settings
-    if args.settings:
-        report.settings(args.settings)
+    # If config file provided, load config
+    if args.config:
+        report.load_config(args.config)
     else:
-        logger.info('no settings file found -- outputting all data from VCF.')
+        logger.info('no config file found -- outputting all data from VCF.')
 
 
     # Make variant report of whole VCF

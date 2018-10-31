@@ -9,7 +9,7 @@ Loaded as part of the vcf_parse.py program.
 Author:     Erik Waskiewicz
 Created:    31 Aug 2018
 Version:    0.1.0
-Updated:    30 Oct 2018
+Updated:    31 Oct 2018
 """
 
 
@@ -62,29 +62,29 @@ class vcf_report:
             self.output_dir, self.sample + '_VariantReport.txt')
 
         # make empty vep variable 
-        self.annotations = None
+        self.config = None
 
 
-    def settings(self, settings_file):
+    def load_config(self, config_file):
         """
-        Load in settings file that defines what annotations to include 
-        within the variant report. Save settings as a list.
+        Load in config file that defines what annotations to include 
+        within the variant report. Save config as a list.
         """
-        self.logger.info('loading report settings from {}'.format(
-            os.path.abspath(settings_file)))
-        settings = []
-        with open(settings_file, 'r') as file:
+        self.logger.info('loading report config from {}'.format(
+            os.path.abspath(config_file)))
+        config = []
+        with open(config_file, 'r') as file:
             reader = csv.reader(file, delimiter='\t')
             for line in reader:
                 try:
-                    settings += [[ line[0], line[1], line[2] ]]
+                    config += [[ line[0], line[1], line[2] ]]
                 except:
-                    settings += [[ line[0], line[1], '' ]]
-            self.annotations = settings
-            self.logger.info('loading report settings completed')
+                    config += [[ line[0], line[1], '' ]]
+            self.config = config
+            self.logger.info('loading report config completed')
 
 
-    def list_settings(self):
+    def list_config(self):
         """
         Returns a list to screen containing all possible column headers
         and the source that the data comes from.
@@ -233,15 +233,15 @@ class vcf_report:
         # Sample and variant are always the first two columns
         header = 'SampleID\tVariant'
 
-        # settings file provided
-        if self.annotations:
-            for annotation in self.annotations:
+        # config file provided
+        if self.config:
+            for annotation in self.config:
                 if annotation[2] != '':
                     header +=  '\t' + annotation[2]
                 else:
                     header +=  '\t' + annotation[0]
 
-        # settings file not provided - all headers
+        # config file not provided - all headers
         else:
             header += '\tPreferred\tClassification\tFilter'
             for annotation in self.info_fields:
@@ -257,9 +257,9 @@ class vcf_report:
         return(header)
 
 
-    def make_record_settings(self, setting, variant, vep=None):
+    def make_record_config(self, setting, variant, vep=None):
         """
-        Makes a line of the variant report if settings are present
+        Makes a line of the variant report if config are present
         """
         out = ['']
 
@@ -286,9 +286,9 @@ class vcf_report:
         return(out)
 
 
-    def make_record_no_settings(self, variant, vep=None):
+    def make_record_no_config(self, variant, vep=None):
         """
-        Makes a line of the variant report if no settings are present
+        Makes a line of the variant report if no config are present
         """
         out = []
 
@@ -324,15 +324,15 @@ class vcf_report:
         - loops through each variant:
            - if variant has VEP annotation:
               - loop through each transcript:
-                 - if settings file provided: 
-                    - loop through settings and add to output list
-                 - if no settings: 
+                 - if config file provided: 
+                    - loop through config and add to output list
+                 - if no config: 
                     - loop through all annotations and add to output list
                  - save output list to output file
            - if no VEP annotations:
-              - if settings file provided: 
-                 - loop through settings and add to output list
-              - if no settings: 
+              - if config file provided: 
+                 - loop through config and add to output list
+              - if no config: 
                  - loop through all annotations and add to output list
               - save output list to output file
         - remove duplicate records  
@@ -365,15 +365,15 @@ class vcf_report:
                         transcript_col = self.vep_fields.index('Feature')
                         if vep_split[transcript_col].startswith('NM'):
 
-                            # if settings file provided, parse annotations
-                            if self.annotations:
-                                for annotation in self.annotations:
-                                    out += self.make_record_settings(annotation, var, vep=vep_split)
+                            # if config file provided, parse annotations
+                            if self.config:
+                                for annotation in self.config:
+                                    out += self.make_record_config(annotation, var, vep=vep_split)
 
-                            # if no settings file - include all annotations
+                            # if no config file - include all annotations
                             # filter and preferred must be first, in that order
                             else:
-                                out = self.make_record_no_settings(var, vep=vep_split)
+                                out = self.make_record_no_config(var, vep=vep_split)
                             
                             # save to file then repeat for all transcripts
                             report_writer.writerow([self.sample] + [variant] + out)
@@ -382,15 +382,15 @@ class vcf_report:
                 except:
                     out = []
 
-                    # if settings file provided, parse annotations
-                    if self.annotations:
-                        for annotation in self.annotations:
-                            out += self.make_record_settings(annotation, var)
+                    # if config file provided, parse annotations
+                    if self.config:
+                        for annotation in self.config:
+                            out += self.make_record_config(annotation, var)
                     
-                    # if no settings file - include all annotations
+                    # if no config file - include all annotations
                     # filter and preferred must be first, in that order
                     else:
-                        out = self.make_record_no_settings(var)
+                        out = self.make_record_no_config(var)
 
                     # save to file then repeat for next variant
                     report_writer.writerow([self.sample] + [variant] + out)
