@@ -8,3 +8,6 @@ Special formatting:
 - All population frequencies from ExAC and 1KG are re-formatted to a percentage
 - Intron and exon numberings are renamed from x/y to x|y (where x and y are numbers), to prevent them appearing as dates in Excel
 - HGVS coding (HGVSc) and protein (HGVSp) sequences have had the transcript name trimmed off
+
+
+
