@@ -221,9 +221,9 @@ def get_args():
     return parser.parse_args()
 
 
-# -- CALL FUNCTIONS ---------------------------------------------------
+# -- MAIN FUNCTION ----------------------------------------------------
 
-if __name__ == '__main__':
+def main(args):
     # setup logger
     logger = logging.getLogger('vcf_parse')
     logger.setLevel(logging.DEBUG)
@@ -236,18 +236,14 @@ if __name__ == '__main__':
     logger.addHandler(handler)
     logger.info('running vcf_parse.py...')
 
-
     # Load arguments, make vcf report object and load data
-    args = get_args()
     report = vcf_report()
     report.load_data(args.input, args.output)
-
 
     # If -l flag called, print headers and exit
     if args.config_list:
         report.list_config()
         exit()
-
 
     # If config file provided, load config
     if args.config:
@@ -255,10 +251,8 @@ if __name__ == '__main__':
     else:
         logger.info('no config file found -- outputting all data from VCF.')
 
-
     # Make variant report of whole VCF
     report.make_report()
-
 
     # If preferred transcripts provided, apply to variant report
     if args.transcripts:
@@ -269,7 +263,6 @@ if __name__ == '__main__':
         logger.info('no preferred transcripts file provided -- preferred ' +
         'transcripts column will all be labelled as "Unknown"')
 
-
     # If known variants provided, apply to variant report
     if args.known_variants:
         known = known_variants()
@@ -279,7 +272,6 @@ if __name__ == '__main__':
     else:
         logger.info('no known variants file provided -- Classification ' +
         'column will be empty')
-
 
     # If single BED file provided, make variant report with BED file 
     # applied
@@ -300,3 +292,10 @@ if __name__ == '__main__':
 
     # Finish
     logger.info('vcf_parse.py completed\n{}'.format('---'*30))
+
+
+# -- CALL FUNCTIONS ---------------------------------------------------
+
+if __name__ == '__main__':
+    args = get_args()
+    main(args)
