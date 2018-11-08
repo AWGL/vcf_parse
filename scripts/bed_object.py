@@ -153,7 +153,7 @@ class bed_object:
         same name as the input BED folder, to save the output
         """
         # make output folder if it doesnt exist, based on input folder name
-        in_folder = os.path.split(os.path.dirname(bed_folder))[-1]
+        in_folder = os.path.basename(bed_folder)
         out_folder = os.path.join(in_vcf.output_dir, in_folder)
         if not os.path.exists(out_folder):
             os.mkdir(out_folder)
