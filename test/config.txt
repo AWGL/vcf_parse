@@ -1,0 +1,12 @@
+Filter	filter
+GT	format	Genotype
+AD	format	
+DP	info	Depth
+Feature	vep	Transcript
+Preferred	pref	Pref
+CANONICAL	vep
+Allele	vep
+Consequence	vep
+IMPACT	vep
+SYMBOL	vep	Gene
+Feature_type	vep
