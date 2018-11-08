@@ -19,6 +19,7 @@ import csv
 from scripts.vcf_report import vcf_report
 from scripts.preferred_transcripts import preferred_transcripts
 from scripts.bed_object import bed_object
+from scripts.known_variants import known_variants
 
 
 class TestVCF(unittest.TestCase):
@@ -30,20 +31,22 @@ class TestVCF(unittest.TestCase):
             )
         self.report.make_report()
 
-
+    
     def tearDown(self):
         """remove output files after test has run"""
         os.remove(self.report.report_path)
         self.report = None
         self.pt = None
-        if os.path.isfile('test/test_bed_files/SAMPLE1_bed1_VariantReport.txt'):
-            os.remove(os.path.abspath(
-                'test/test_bed_files/SAMPLE1_bed1_VariantReport.txt'
-                ))
-        if os.path.isfile('test/test_bed_files/SAMPLE1_bed2_VariantReport.txt'):
-            os.remove(os.path.abspath(
-                'test/test_bed_files/SAMPLE1_bed2_VariantReport.txt'
-                ))
+
+        # list of files to remove
+        filenames = ['test/SAMPLE1_bed1_VariantReport.txt', 
+                     'test/test_bed_files/SAMPLE1_bed1_VariantReport.txt', 
+                     'test/test_bed_files/SAMPLE1_bed2_VariantReport.txt', 
+                     'test/test_bed_files/SAMPLE1_bed3bed_VariantReport.txt']
+
+        for filename in filenames:
+            if os.path.isfile(filename):
+                os.remove(os.path.abspath(filename))
 
 
     def test_vcf_parser_number_variants(self):
@@ -127,35 +130,41 @@ class TestVCF(unittest.TestCase):
         report_sum = sum(1 for line in open(os.path.abspath(
             'test/SAMPLE1_VariantReport.txt'
             )))
-        self.assertEqual(report_sum, 477, 
+        self.assertEqual(report_sum, 229, 
             'Number of variants incorrect'
             )
 
 
-    def test_load_settings(self):
+    def test_load_config(self):
         """
         Check that settings file is loaded correctly, the headers loaded in 
         should be the same as the expected list below
         """
-        expected_settings = ['#Sample', 'Variant', 'Filter', 'GT', 'AF',
-        'DP', 'Feature', 'Preferred', 'CANONICAL', 'Allele', 
-        'Consequence', 'IMPACT', 'SYMBOL', 'Gene', 'DP', 'Feature_type']
+        expected_settings = ['SampleID', 'Variant', 'Filter', 'Genotype', 'AD',
+        'Depth', 'Transcript', 'Pref', 'CANONICAL', 'Allele', 'Consequence', 
+        'IMPACT', 'Gene', 'Feature_type']
 
-        self.report.settings(os.path.abspath('test/config.txt'))
+        # load config
+        self.report.load_config(os.path.abspath('test/config.txt'))
         self.report.make_report()
+
+        # compare headers in report to expected list
         with open(self.report.report_path) as f:
             reader = csv.reader(f, delimiter='\t')
             self.assertEqual(reader.next(), expected_settings)
 
-
+    
     def test_preferred_transcripts_high_strictness_true(self):
         """
         Check that preferred transcripts are labelled correctly. 
         NM_001007553 should be true with high and low strictness
         """
+        # apply preferred transcripts
         self.pt = preferred_transcripts()
         self.pt.load(os.path.abspath('test/PreferredTranscripts.txt'))
-        self.pt.apply(self.report.report_path, 'high')
+        self.pt.apply(self.report, 'high')
+
+        # check in report
         with open(self.report.report_path) as report:
             reader = csv.reader(report, delimiter='\t')
             for line in reader:
@@ -170,9 +179,12 @@ class TestVCF(unittest.TestCase):
         XM_005245221 should be false with high strictness and true with
         low strictness.
         """
+        # apply preferred transcripts
         self.pt = preferred_transcripts()
         self.pt.load(os.path.abspath('test/PreferredTranscripts.txt'))
-        self.pt.apply(self.report.report_path, 'high')
+        self.pt.apply(self.report, 'high')
+
+        # check in report
         with open(self.report.report_path) as report:
             reader = csv.reader(report, delimiter='\t')
             for line in reader:
@@ -186,9 +198,12 @@ class TestVCF(unittest.TestCase):
         Check that preferred transcripts are labelled correctly. 
         NM_001007553 should be true with high and low strictness
         """
+        # apply preferred transcripts
         self.pt = preferred_transcripts()
         self.pt.load(os.path.abspath('test/PreferredTranscripts.txt'))
-        self.pt.apply(self.report.report_path, 'low')
+        self.pt.apply(self.report, 'low')
+
+        # check in report
         with open(self.report.report_path) as report:
             reader = csv.reader(report, delimiter='\t')
             for line in reader:
@@ -203,9 +218,12 @@ class TestVCF(unittest.TestCase):
         XM_005245221 should be false with high strictness and true with
         low strictness.
         """
+        # apply preferred transcripts
         self.pt = preferred_transcripts()
         self.pt.load(os.path.abspath('test/PreferredTranscripts.txt'))
-        self.pt.apply(self.report.report_path, 'low')
+        self.pt.apply(self.report, 'low')
+
+        # check in report
         with open(self.report.report_path) as report:
             reader = csv.reader(report, delimiter='\t')
             for line in reader:
@@ -219,30 +237,35 @@ class TestVCF(unittest.TestCase):
         Check that preferred transcripts are labelled correctly. 
         Not in preferred transcripts - should be false.
         """
+        # apply preferred transcripts
         self.pt = preferred_transcripts()
         self.pt.load(os.path.abspath('test/PreferredTranscripts.txt'))
-        self.pt.apply(self.report.report_path, 'low')
+        self.pt.apply(self.report, 'low')
+
+        # check in report
         with open(self.report.report_path) as report:
             reader = csv.reader(report, delimiter='\t')
             for line in reader:
                 if line[1] == '3:41265953CT>C':
-                    self.assertEqual(line[3], 'False')
+                    self.assertEqual(line[2], 'False')
 
-
-    # apply bed files
+ 
     def test_bed_files(self):
         """
         Check that correct number of variants are filtered out with BED file
         Should be 6
         """
+        # apply bed file
         self.bed = bed_object()
         self.bed.apply_single(
             os.path.abspath('test/test_bed_files/bed1.bed'), self.report
             )
+        
+        # check number of variants in output
         n = sum(1 for line in open(os.path.abspath(
-            'test/test_bed_files/SAMPLE1_bed1_VariantReport.txt'
+            'test/SAMPLE1_bed1_VariantReport.txt'
             )))
-        self.assertEqual(n , 6)
+        self.assertEqual(n , 2)
 
 
     def test_bed_files_multiple(self):
@@ -251,18 +274,45 @@ class TestVCF(unittest.TestCase):
         multiple BED files
         Should be 6 and 10
         """
+        # apply bed files
         self.bed = bed_object()
         self.bed.apply_multiple(
-            os.path.abspath('test/test_bed_files/'), self.report
+            os.path.abspath('test/test_bed_files'), self.report
         )
+        
+        # check number of variants in outputs
         bed1_sum = sum(1 for line in open(os.path.abspath(
             'test/test_bed_files/SAMPLE1_bed1_VariantReport.txt'
             )))
         bed2_sum = sum(1 for line in open(os.path.abspath(
             'test/test_bed_files/SAMPLE1_bed2_VariantReport.txt'
             )))
-        self.assertEqual(bed1_sum, 6)
-        self.assertEqual(bed2_sum, 10)
+        bed3_sum = sum(1 for line in open(os.path.abspath(
+            'test/test_bed_files/SAMPLE1_bed3bed_VariantReport.txt'
+            )))
+        
+        self.assertEqual(bed1_sum, 2)
+        self.assertEqual(bed2_sum, 5)
+        self.assertEqual(bed3_sum, 5)
+
+
+    def test_known_variants(self):
+        """
+        Check that known variant is correctly labelled as '1'
+        """
+        # apply known variants
+        known = known_variants()
+        known.load_known_variants(os.path.abspath(
+            'test/KnownVariants.vcf'
+        ))
+        known.apply_known_variants(self.report)
+
+        # check output report
+        with open(self.report.report_path) as report:
+            reader = csv.reader(report, delimiter='\t')
+            for line in reader:
+                if line[1] == '1:162748588C>A':
+                    self.assertEqual(line[3], '1')
 
 
 # Runs all tests when the script is run
