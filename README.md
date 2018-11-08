@@ -113,11 +113,13 @@ optional arguments:
                         See CONFIG section for usage.
 ```
 
-Special formatting for report fields:  
+### Special formatting for report fields:  
 - % Allele frequency has been calculated from the AD
 - Genotypes are reformatted from 0/0, 0/1 and 1/1 to HOM_REF, HET and HOM_ALT, respectively, to prevent them from appearing as dates in Excel
 - dbSNP, COSMIC and HGMD are parsed from the 'Existing_variation' VEP field
 - All population frequencies from ExAC and 1KG are re-formatted to a percentage
 - Intron and exon numberings are renamed from x/y to x|y (where x and y are numbers), to prevent them appearing as dates in Excel
 - HGVS coding (HGVSc) and protein (HGVSp) sequences have had the transcript name trimmed off
-- 
+
+### Testing
+To run unit tests run `python -m unittest test`
