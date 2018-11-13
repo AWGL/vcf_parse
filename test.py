@@ -42,7 +42,8 @@ class TestVCF(unittest.TestCase):
         filenames = ['test/SAMPLE1_bed1_VariantReport.txt', 
                      'test/test_bed_files/SAMPLE1_bed1_VariantReport.txt', 
                      'test/test_bed_files/SAMPLE1_bed2_VariantReport.txt', 
-                     'test/test_bed_files/SAMPLE1_bed3bed_VariantReport.txt']
+                     'test/test_bed_files/SAMPLE1_bed3bed_VariantReport.txt',
+                     'test/test_bed_files/SAMPLE1_edge_VariantReport.txt',]
 
         for filename in filenames:
             if os.path.isfile(filename):
@@ -313,6 +314,49 @@ class TestVCF(unittest.TestCase):
             for line in reader:
                 if line[1] == '1:162748588C>A':
                     self.assertEqual(line[3], '1')
+
+
+class TestEdgeVariants(unittest.TestCase):
+    def setUp(self):
+        """load in common files"""
+        self.report = vcf_report()
+        self.report.load_data(
+            os.path.abspath('test/edge_variants.vcf'), os.path.abspath('test/')
+            )
+        self.report.make_report()
+
+
+    def tearDown(self):
+        """remove output files after test has run"""
+        os.remove(self.report.report_path)
+        self.report = None
+        self.pt = None
+
+        # list of files to remove
+        filenames = ['test/SAMPLE1_edge_VariantReport.txt',
+                    'test/test_bed_files/SAMPLE1_edge_VariantReport.txt',]
+
+        for filename in filenames:
+            if os.path.isfile(filename):
+                os.remove(filename)
+
+    def test_edge_variants(self):
+        """
+        Test that we get indels which overlap 5' boundary of bed file.
+
+        """
+
+        self.bed = bed_object()
+        self.bed.apply_single(
+            os.path.abspath('test/test_bed_files/edge.bed'), self.report
+            )
+        
+        # check number of variants in output
+        n = sum(1 for line in open(os.path.abspath(
+            'test/SAMPLE1_edge_VariantReport.txt'
+            )))
+        self.assertEqual(n , 15)
+
 
 
 # Runs all tests when the script is run

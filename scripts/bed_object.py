@@ -19,8 +19,8 @@ import logging
 import re
 
 
-# set global variable to point to bedtools executables
-BEDTOOLS_PATH = '/Users/erik/Applications/bedtools2/bin/'
+# set global variable to point to bedtools executables - if using conda leave as empty string
+BEDTOOLS_PATH = ''
 
 
 # -- BED CLASS --------------------------------------------------------
@@ -49,11 +49,31 @@ class bed_object:
 
                 # for each line, split variant into BED format and save
                 for line in reader:
+
                     if line[0] != 'SampleID':
+
+
                         variant = line[1].split(':')
-                        pos = re.sub('[^0-9]', '', variant[1])
+                        ref = variant[1].split('>')[0].strip('0123456789')
+                        alt = variant[1].split('>')[1]
+
+                        #Account for indels overlapping gene bed
+                        if len(ref) > 1:
+
+                            start_pos = int(variant[1].strip('AGTC>')) - 1
+                            end_pos = start_pos + len(ref) + 1
+
+                        else:
+                
+                            start_pos = int(variant[1].strip('AGTC>')) - 1
+                            end_pos =  variant[1].strip('AGTC>')
+
+
                         out.write('{}\t{}\t{}\t{}\n'.format(
-                            variant[0], str(int(pos) - 1), pos, line[1]
+                            variant[0],
+                            start_pos,
+                            end_pos,
+                            line[1]
                         ))
             out.close()
         report.close()

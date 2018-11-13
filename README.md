@@ -1,6 +1,23 @@
 # vcf_parse.py
 Tool for parsing VCF files and making a text report.
 
+## Install
+
+Install Miniconda from https://conda.io/miniconda.html
+
+A virtual environment called vcf_parse can then be created using the following command:
+
+```
+
+conda env create -f env/vcf_parse.yaml
+
+source activate vcf_parse
+
+```
+
+## Run
+
+
 ```
 usage: vcf_parse.py [-h] [-v] [-O OUTPUT] [-t TRANSCRIPTS]
                     [-T TRANSCRIPT_STRICTNESS] [-b BED | -B BED_FOLDER]
