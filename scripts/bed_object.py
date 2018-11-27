@@ -52,21 +52,19 @@ class bed_object:
 
                     if line[0] != 'SampleID':
 
-
                         variant = line[1].split(':')
                         ref = variant[1].split('>')[0].strip('0123456789')
-                        alt = variant[1].split('>')[1]
+
+                        start_pos = int(variant[1].strip('AGTC>,')) - 1
 
                         #Account for indels overlapping gene bed
                         if len(ref) > 1:
 
-                            start_pos = int(variant[1].strip('AGTC>')) - 1
                             end_pos = start_pos + len(ref) + 1
 
                         else:
                 
-                            start_pos = int(variant[1].strip('AGTC>')) - 1
-                            end_pos =  variant[1].strip('AGTC>')
+                            end_pos =  start_pos + 1
 
 
                         out.write('{}\t{}\t{}\t{}\n'.format(
