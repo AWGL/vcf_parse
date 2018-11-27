@@ -52,21 +52,19 @@ class bed_object:
 
                     if line[0] != 'SampleID':
 
-
                         variant = line[1].split(':')
                         ref = variant[1].split('>')[0].strip('0123456789')
-                        alt = variant[1].split('>')[1]
+
+                        start_pos = int(variant[1].strip('AGTC>,')) - 1
 
                         #Account for indels overlapping gene bed
                         if len(ref) > 1:
 
-                            start_pos = int(variant[1].strip('AGTC>')) - 1
                             end_pos = start_pos + len(ref) + 1
 
                         else:
                 
-                            start_pos = int(variant[1].strip('AGTC>')) - 1
-                            end_pos =  variant[1].strip('AGTC>')
+                            end_pos =  start_pos + 1
 
 
                         out.write('{}\t{}\t{}\t{}\n'.format(
@@ -173,7 +171,7 @@ class bed_object:
         same name as the input BED folder, to save the output
         """
         # make output folder if it doesnt exist, based on input folder name
-        in_folder = os.path.basename(bed_folder)
+        in_folder = os.path.split(os.path.dirname(bed_folder))[-1]
         out_folder = os.path.join(in_vcf.output_dir, in_folder)
         if not os.path.exists(out_folder):
             os.mkdir(out_folder)
