@@ -218,6 +218,18 @@ def get_args():
         \n'''
     ))
 
+
+    # OPTIONAL: Filter out any variants where FILTER column is not PASS
+    parser.add_argument(
+        '-F', '--filter_non_pass', action='store_true', 
+        help=textwrap.dedent(
+        '''
+        Filters out any variants where the FILTER annotation is not 
+        PASS. If missing then there will be no fitering based on the
+        FILTER annotation.
+        \n'''
+    ))
+
     return parser.parse_args()
 
 
@@ -252,7 +264,7 @@ def main(args):
         logger.info('no config file found -- outputting all data from VCF.')
 
     # Make variant report of whole VCF
-    report.make_report()
+    report.make_report(args.filter_non_pass)
 
     # If preferred transcripts provided, apply to variant report
     if args.transcripts:

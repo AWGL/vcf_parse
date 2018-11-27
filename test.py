@@ -29,7 +29,7 @@ class TestVCF(unittest.TestCase):
         self.report.load_data(
             os.path.abspath('test/test.vcf'), os.path.abspath('test/')
             )
-        self.report.make_report()
+        self.report.make_report(False)
 
     
     def tearDown(self):
@@ -123,7 +123,22 @@ class TestVCF(unittest.TestCase):
         self.assertEqual(self.report.vep_fields, expected_vep_fields)
 
 
-    def test_variant_report_number_variants(self):
+    def test_variant_report_number_variants_filter(self):
+        """
+        Check that number of rows in the variant report is correct,
+        should be 477
+        """
+        self.report.make_report(True)
+
+        report_sum = sum(1 for line in open(os.path.abspath(
+            'test/SAMPLE1_VariantReport.txt'
+            )))
+        self.assertEqual(report_sum, 229, 
+            'Number of variants incorrect'
+            )
+
+
+    def test_variant_report_number_variants_no_filter(self):
         """
         Check that number of rows in the variant report is correct,
         should be 477
@@ -131,7 +146,7 @@ class TestVCF(unittest.TestCase):
         report_sum = sum(1 for line in open(os.path.abspath(
             'test/SAMPLE1_VariantReport.txt'
             )))
-        self.assertEqual(report_sum, 229, 
+        self.assertEqual(report_sum, 271, 
             'Number of variants incorrect'
             )
 
@@ -147,7 +162,7 @@ class TestVCF(unittest.TestCase):
 
         # load config
         self.report.load_config(os.path.abspath('test/config.txt'))
-        self.report.make_report()
+        self.report.make_report(False)
 
         # compare headers in report to expected list
         with open(self.report.report_path) as f:
@@ -323,7 +338,7 @@ class TestEdgeVariants(unittest.TestCase):
         self.report.load_data(
             os.path.abspath('test/edge_variants.vcf'), os.path.abspath('test/')
             )
-        self.report.make_report()
+        self.report.make_report(False)
 
 
     def tearDown(self):
