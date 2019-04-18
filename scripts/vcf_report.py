@@ -315,7 +315,7 @@ class vcf_report:
         return(out)
 
 
-    def make_report(self):
+    def make_report(self, filter_setting):
         """
         Contains a lot of nested loops, overview of loop structure:
 
@@ -347,7 +347,7 @@ class vcf_report:
         for var in self.data:
             
             # PASS filter - pass will be empty - [], anything else will be filtered out
-            if var.FILTER:
+            if filter_setting and var.FILTER :
                 pass
 
             else:
