@@ -51,7 +51,11 @@ class vcf_report:
         self.format_fields = vcf_reader.formats
 
         # load vep headers from vcf INFO field, split into list
-        self.vep_fields = self.info_fields['CSQ'][3].split(' ')[-1].split('|')
+        # added try except to fix issue #9
+        try:
+            self.vep_fields = self.info_fields['CSQ'][3].split(' ')[-1].split('|')
+        except KeyError:
+            self.vep_fields = [] # use empty list instead of None to avoid downstream errors
 
         # load output filepath
         if out is not None:

@@ -40,10 +40,10 @@ class TestVCF(unittest.TestCase):
 
         # list of files to remove
         filenames = ['test/SAMPLE1_bed1_VariantReport.txt', 
-                     'test/test_bed_files/SAMPLE1_bed1_VariantReport.txt', 
-                     'test/test_bed_files/SAMPLE1_bed2_VariantReport.txt', 
-                     'test/test_bed_files/SAMPLE1_bed3bed_VariantReport.txt',
-                     'test/test_bed_files/SAMPLE1_edge_VariantReport.txt',]
+                     'test/test/SAMPLE1_bed1_VariantReport.txt', 
+                     'test/test/SAMPLE1_bed2_VariantReport.txt', 
+                     'test/test/SAMPLE1_bed3bed_VariantReport.txt',
+                     'test/test/SAMPLE1_edge_VariantReport.txt',]
 
         for filename in filenames:
             if os.path.isfile(filename):
@@ -298,13 +298,13 @@ class TestVCF(unittest.TestCase):
         
         # check number of variants in outputs
         bed1_sum = sum(1 for line in open(os.path.abspath(
-            'test/test_bed_files/SAMPLE1_bed1_VariantReport.txt'
+            'test/test/SAMPLE1_bed1_VariantReport.txt'
             )))
         bed2_sum = sum(1 for line in open(os.path.abspath(
-            'test/test_bed_files/SAMPLE1_bed2_VariantReport.txt'
+            'test/test/SAMPLE1_bed2_VariantReport.txt'
             )))
         bed3_sum = sum(1 for line in open(os.path.abspath(
-            'test/test_bed_files/SAMPLE1_bed3bed_VariantReport.txt'
+            'test/test/SAMPLE1_bed3bed_VariantReport.txt'
             )))
         
         self.assertEqual(bed1_sum, 2)
@@ -349,7 +349,7 @@ class TestEdgeVariants(unittest.TestCase):
 
         # list of files to remove
         filenames = ['test/SAMPLE1_edge_VariantReport.txt',
-                    'test/test_bed_files/SAMPLE1_edge_VariantReport.txt',]
+                    'test/test/SAMPLE1_edge_VariantReport.txt',]
 
         for filename in filenames:
             if os.path.isfile(filename):
@@ -372,6 +372,38 @@ class TestEdgeVariants(unittest.TestCase):
             )))
         self.assertEqual(n , 15)
 
+
+class TestEmptyVcf(unittest.TestCase):
+    def setUp(self):
+        """load in common files"""
+        self.report = vcf_report()
+        self.report.load_data(
+            os.path.abspath('test/empty_vcf.vcf'), os.path.abspath('test/')
+            )
+        self.report.make_report(False)
+
+
+    def tearDown(self):
+        """remove output files after test has run"""
+        os.remove(self.report.report_path)
+        self.report = None
+        self.pt = None
+
+
+    def test_empty_vcf(self):
+        """
+        Test that there is an output from and empty VCF and that it is empty.
+
+        """
+        # check that a file has been made
+        file_made = os.path.isfile('test/SAMPLE1_VariantReport.txt')
+        self.assertEqual(file_made, True)
+
+        # check that there are no variants in output
+        n = sum(1 for line in open(os.path.abspath(
+            'test/SAMPLE1_VariantReport.txt'
+            )))
+        self.assertEqual(n , 1) #should be one because there is a header only
 
 
 # Runs all tests when the script is run
