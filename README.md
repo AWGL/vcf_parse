@@ -21,7 +21,7 @@ source activate vcf_parse
 ```
 usage: vcf_parse.py [-h] [-v] [-O OUTPUT] [-t TRANSCRIPTS]
                     [-T TRANSCRIPT_STRICTNESS] [-b BED | -B BED_FOLDER]
-                    [-k KNOWN_VARIANTS] [-c CONFIG] [-l]
+                    [-k KNOWN_VARIANTS] [-c CONFIG] [-l] [-F]
                     input
 
 summary:
@@ -128,9 +128,25 @@ optional arguments:
   -l, --config_list
                         Return a list of all availabile config to the screen, then exit.
                         See CONFIG section for usage.
-```
 
-### Special formatting for report fields:  
+  -F, --filter_non_pass
+
+                        Filters out any variants where the FILTER annotation is not
+                        PASS. If missing then there will be no fitering based on the
+                        FILTER annotation.
+
+```
+## Filtering of output
+
+By default, from v0.1.1, there is no filtering of variants based on the filter column in the VCF.
+
+**Important for SomaticAmplicon pipeline:**
+
+The SomaticAmplicon pipeline requires vcf_parse to filter out any variant which had any annotation other than PASS in the filter column. This is the original behaviour in v0.1.0 and the previous vcf parsing tool.
+
+To preserve this behavior in v0.1.1 onwards, include the `--filter_non_pass` flag.
+
+## Special formatting for report fields:  
 - % Allele frequency has been calculated from the AD
 - Genotypes are reformatted from 0/0, 0/1 and 1/1 to HOM_REF, HET and HOM_ALT, respectively, to prevent them from appearing as dates in Excel
 - dbSNP, COSMIC and HGMD are parsed from the 'Existing_variation' VEP field
@@ -138,5 +154,5 @@ optional arguments:
 - Intron and exon numberings are renamed from x/y to x|y (where x and y are numbers), to prevent them appearing as dates in Excel
 - HGVS coding (HGVSc) and protein (HGVSp) sequences have had the transcript name trimmed off
 
-### Testing
+## Testing
 To run unit tests run `python -m unittest test`
