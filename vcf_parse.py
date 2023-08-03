@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
 Convert annotated vcf from 1_SomaticAmplicon.sh into readable variant report file
 """
@@ -60,8 +62,9 @@ def parse_ntc(ntc_file):
 		ref = line.ref
 		alt = line.alts[0]
 		var = chrom+":"+str(pos)+ref+">"+alt
-
-		vaf = line.samples[0]['AF'][0]
+		vaf = line.info['AF']
+		# Convert vaf tuple to string and remove parentheses
+		vaf = str(vaf).replace('(','').replace(')','').replace(',','')
 		dp = line.samples[0]['DP']
 
 		#For alt read count, get last value from AD
@@ -90,7 +93,6 @@ def parse_sample(inp, outfile, ntc_list, pref_transcript):
 
 	# Read vcf file
 	inp = VariantFile(inp)
-
 	# CSQ fields from header to be parsed with pyvariantfilter
 	csq_fields = str(inp.header.info['CSQ'].record)
 	csq_fields = csq_fields.strip()
@@ -109,8 +111,8 @@ def parse_sample(inp, outfile, ntc_list, pref_transcript):
 
 			# Load vaf and depth
 			vaf = record.info['AF']
-			#vaf = record.samples[0]['AF'][0]
-			#depth = record.samples[0]['DP'][0]
+	                # Convert vaf tuple to string and remove parentheses
+			vaf = str(vaf).replace('(','').replace(')','').replace(',','')	
 			depth = record.info['DP']
 			# Alt-reads - take second value from AD
 			alt_reads = record.samples[0]['AD'][1]
@@ -199,6 +201,7 @@ def parse_sample(inp, outfile, ntc_list, pref_transcript):
 			else:
 				#Check if variant in NTC
 				for entry in ntc_list:
+					variant_full = chrom+":"+str(pos)+ref+">"+alt
 					if variant_full == entry[0]:
 						in_ntc = "True"
 						ntc_vaf = entry[1]
@@ -218,16 +221,6 @@ def parse_sample(inp, outfile, ntc_list, pref_transcript):
 
 	return(variant_list)
 
-		# load output filepath
-#		if out is not None:
-#			output_dir = os.path.abspath(out)
-#		else:
-#			output_dir = os.path.abspath('.')
-#
-#		report_path = os.path.join(
-#			output_dir, sample + '_VariantReport.txt')
-#
-#		logger.info('loading VCF complete')
 
 ## Input arguments
 def get_args():
@@ -291,7 +284,7 @@ def main(args):
 	handler.setFormatter(formatter)
 
 	logger.addHandler(handler)
-	logger.info('running vcf_parse2.py...')
+	logger.info('running vcf_parse.py...')
 
 	#Load arguments, make vcf report object and load data
 
@@ -328,7 +321,7 @@ def main(args):
 			file.write(str(line) + '\n')
 
 	# Final file
-	logger.info('vcf_parse2.py completed\n{}'.format('---'*30))
+	logger.info('vcf_parse.py completed\n{}'.format('---'*30))
 
 # Call functions
 if __name__ == '__main__':
