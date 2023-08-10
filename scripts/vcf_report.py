@@ -102,13 +102,9 @@ class vcf_report:
         print('ALT\tvar\talt')
 
         # preferred transcript and filter fields
-        #print('Preferred\tpref')
-        #print('Filter\tfilter')
-        #print('Classification\tcustom')
+
         # format fields
         print('Frequency\tformat\tvaf')
-        #for record in self.format_fields:
-         #   print(record + '\tformat'
 
         # info fields - only want depth
         for record in self.info_fields:
@@ -116,11 +112,6 @@ class vcf_report:
                 print('DP' + '\tinfo' + '\tdepth')
 
         # vep fields
-
-        #print('dbSNP\tvep')
-        #print('Cosmic\tvep')
-        #print('HGMD\tvep')
-
         print('Feature\tvep\ttranscript')
         print('HGVSp\tvep\thgvs_p')
         print('HGVSc\tvep\thgvs_c')
@@ -229,17 +220,6 @@ class vcf_report:
                 header +=  '\t' + annotation[2]
             else:
                 header +=  '\t' + annotation[0]
-
-        # config file not provided - all headers
-#        else:
- #           header += '\tPreferred\tClassification\tFilter'
-  #          for annotation in self.info_fields:
-   #             if annotation != 'CSQ':
-    #                header += '\t' + annotation
-     #       for annotation in self.format_fields:
-      #          header += '\t' + annotation
-       #     for annotation in self.vep_fields:
-        #        header += '\t' + annotation
 
         # add newline and return
         header += '\n'
