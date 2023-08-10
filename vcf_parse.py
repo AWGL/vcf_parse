@@ -194,7 +194,7 @@ def parse_sample(inp, outfile, ntc_list, pref_transcript):
 
 			#Check if NTC variant list empty
 			if len(ntc_list) == 0:
-				in_ntc = ""
+				in_ntc = "False"
 				ntc_vaf = ""
 				ntc_depth = ""
 				ntc_alt_reads = ""
