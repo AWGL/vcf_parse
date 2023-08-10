@@ -126,35 +126,7 @@ class vcf_report:
         print('HGVSc\tvep\thgvs_c')
         print('Consequence\tvep\tconsequence')
         print('EXON\tvep\texon')
-
- #       for record in self.vep_fields:
-  #          if record == 'Feature'\
-   #             or record == 'HGVSc'\
-    #            or record == 'HGVSp'\
-     #           or record == 'Consequence'\
-      #          or record == 'EXON'\
-       #         or record == 'SYMBOL':
-        #        print(record + '\tvep' + '\tduh')
-
-
-#    def make_variant_name(self, variant):
-#        var_name = '{}{}{}>{}'.format(
- #           str(variant.CHROM),
-  #          str(variant.POS),
-   #         str(variant.REF),
-    #        str(variant.ALT).strip('[]').replace(' ', '')
-     #   )
-
-#        return(var_name)
-
-#    def parse_filter_field(self, variant):
- #       try:
-  #          out = [str(variant.FILTER)]
-   #     except:
-    #        out = ['']
-#
- #       return(out)
-
+        
 
     def parse_chrom_field(self, variant):
 
@@ -219,16 +191,6 @@ class vcf_report:
                     freq = float((alt / (ref + alt)) * 100)
                     out = ['{}%'.format(round(freq, 2))]
 
-                # custom setting for genotype
-                #if field == 'GT':
-                 #   gt = out[0]
-                  #  if gt == '0/1':
-                   #     out = ['HET']
-                    #if gt == '1/1':
-                     #   out = ['HOM_VAR']
-                    #if gt == '0/0':
-                     #   out = ['HOM_REF']
-
         return(out)
 
     def parse_vep_field(self, field, vep):
@@ -250,45 +212,7 @@ class vcf_report:
                     out = split[1]
                 except:
                     pass
-
-            # custom existing variantion field tweak
-           # if field in ('dbSNP', 'Cosmic', 'HGMD'):
-                # split existing variation field by & sign
-            #    existing_variation_pos = self.vep_fields.index('Existing_variation')
-             #   existing_variation = str(vep[existing_variation_pos]).split('&')
-
-                # define identifier for each different annotation type
-              #  if field == 'dbSNP':
-               #     id = 'rs'
-                #if field == 'Cosmic':
-                 #   id = 'COSM'
-                #if field == 'HGMD':
-                 #   id = 'CM'
-
-            # make output string containing only records of the desired type
-#            out_list = ''
- #           for item in existing_variation:
-#
- #               if item.startswith(id):
-  #                  out_list += '{},'.format(str(item))
-   #         out = out_list.rstrip(',')
-
-            # custom exac/1kg tweak
-            #if field in ('ExAC_AFR_MAF', 'ExAC_AMR_MAF', 'ExAC_EAS_MAF', 'ExAC_FIN_MAF',
-             #   'ExAC_NFE_MAF', 'ExAC_SAS_MAF', 'ExAC_OTH_MAF', 'AFR_MAF', 'AMR_MAF',
-              #  'EAS_MAF', 'EUR_MAF', 'SAS_MAF'):
-
-               # out_string = ''
-
-                #try:
-                 #   for record in out.split('&'):
-                  #      split = record.split(':')
-                   #     percent = float(split[1]) * 100
-                    #    out_string += '{}:{}%,'.format(split[0], str(percent))
-                   # out = out_string.rstrip(',')
-                #except:
-                 #   pass
-
+                    
         else:
             out = 'No VEP output'
 
